@@ -1091,40 +1091,41 @@ async function fetchLiveSheetData() {
         
         const rows = csvText.split(/\r?\n/).map(row => row.split(',').map(c => c ? c.replace(/^"(.*)"$/, '$1').trim() : ''));
         
-        sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
+        sheetStats = { totalResponses: 0, totalAmount: 0, totalCalendarsBooked: 0, responderNames: [] };
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             if (!row || row.length < 2) continue;
             
-            // PublicFeed mapping: 
-            // Index 0: Timestamp, Index 1: Name, Index 2: City, Index 3: No. of Calendars
             const name = row[1] || "";
             if (!row[0] && !name) continue;
             
             sheetStats.totalResponses++;
             if (name) sheetStats.responderNames.push(name);
 
-            // Read directly from the "No. of Calendars" column (Index 3)
-            const calValStr = row[3] || "";  
-            const calMatch = calValStr.match(/\d+/);
-            if (calMatch) {
-                const calCount = parseInt(calMatch[0], 10);
-                if (!isNaN(calCount) && calCount > 0) {
-                    sheetStats.totalCalendarsBooked += calCount;
+            // Assuming the donation amount is in column index 4 (or adjust index if needed)
+            const amtValStr = row[4] || "";  
+            const amtMatch = amtValStr.match(/\d+/);
+            if (amtMatch) {
+                const amt = parseInt(amtMatch[0], 10);
+                if (!isNaN(amt) && amt > 0) {
+                    sheetStats.totalAmount += amt;
                 }
             }
         }
+
+        // Total calendars booked = total donations divided by 75, rounded down
+        sheetStats.totalCalendarsBooked = Math.floor(sheetStats.totalAmount / 75);
 
         renderTicker();
 
     } catch (error) {
         console.warn("Live ticker fetch failed:", error);
-        sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
+        sheetStats = { totalResponses: 0, totalAmount: 0, totalCalendarsBooked: 0, responderNames: [] };
         renderTicker();
     }
 }
-
+   
 function renderTicker() {
     const tickerContent = document.getElementById('tickerContent');
     const quickSummaryPill = document.getElementById('quickSummaryPill');
