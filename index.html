@@ -993,7 +993,6 @@ function updateDonationInfo() {
             numInput.max = detail.max;
             numInput.placeholder = t.phNumCalRange.replace('{max}', detail.max);
             
-            // Validate and adjust if existing value exceeds the newly selected donation tier limit
             validateCalendarInput();
         }
     } else {
@@ -1005,7 +1004,6 @@ function updateDonationInfo() {
     checkAddressRequirement();
 }
 
-/* Instant Real-Time Validation Function */
 function validateCalendarInput() {
     const donationVal = document.getElementById('donationQty').value;
     const numInput = document.getElementById('numCalendars');
@@ -1093,28 +1091,30 @@ async function fetchLiveSheetData() {
         
         const rows = csvText.split(/\r?\n/).map(row => row.split(',').map(c => c ? c.replace(/^"(.*)"$/, '$1').trim() : ''));
         
-        sheetStats = { totalResponses: 0, totalAmount: 0, responderNames: [] };
+        sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
             if (!row || row.length < 2) continue;
             
-            // Name field assumption: Column index 1
+            // PublicFeed mapping: 
+            // Index 0: Timestamp, Index 1: Name, Index 2: City, Index 3: No. of Calendars
             const name = row[1] || "";
             if (!row[0] && !name) continue;
             
             sheetStats.totalResponses++;
             if (name) sheetStats.responderNames.push(name);
 
-            const amtValStr = row[4] || "";  
-            const amtMatch = amtValStr.match(/\d+/);
-            if (amtMatch) {
-                const amt = parseInt(amtMatch[0], 10);
-                if (!isNaN(amt) && amt > 0) sheetStats.totalAmount += amt;
+            // Read directly from the "No. of Calendars" column (Index 3)
+            const calValStr = row[3] || "";  
+            const calMatch = calValStr.match(/\d+/);
+            if (calMatch) {
+                const calCount = parseInt(calMatch[0], 10);
+                if (!isNaN(calCount) && calCount > 0) {
+                    sheetStats.totalCalendarsBooked += calCount;
+                }
             }
         }
-
-        sheetStats.totalCalendarsBooked = Math.floor(sheetStats.totalAmount / 75);
 
         renderTicker();
 
@@ -1132,7 +1132,6 @@ function renderTicker() {
 
     quickSummaryPill.innerHTML = `${sheetStats.totalCalendarsBooked} ${currentLang === 'ta' ? 'காலண்டர்கள்' : 'Booked'}`;
 
-    // Build the Options list for the Responses List Box
     let namesOptionsHTML = `<option value="" disabled selected>${t.tickerTotal}: ${sheetStats.totalResponses}</option>`;
     if (sheetStats.responderNames.length > 0) {
         sheetStats.responderNames.forEach((personName, idx) => {
@@ -1167,7 +1166,6 @@ async function handleFormSubmit(event) {
     const txnRefVal = document.getElementById('txnRef').value.trim();
     const postalVal = document.getElementById('postalAddress').value.trim();
 
-    // 4 Mandatory Fields Check: Name, Donation, No. of Calendars, Bank Ref No
     if (!nameVal || !donationVal || numCalVal === "" || numCalVal === null || !txnRefVal) {
         alert(currentLang === 'ta' ? 'தயவுசெய்து தேவையான அனைத்து விவரங்களையும் (பெயர், நிதி தொகை, காலண்டர்கள் எண்ணிக்கை, வங்கி பரிவர்த்தனை எண்) நிரப்பவும்.' : 'Please fill in all 4 mandatory fields (Name, Donation, No. of Calendars, Bank Ref No).');
         return;
@@ -1176,7 +1174,6 @@ async function handleFormSubmit(event) {
     const btn = document.getElementById('btnSubmit');
     btn.disabled = true;
 
-    // Google Form Mapping Payload
     const formData = new URLSearchParams();
     formData.append('entry.699083134', nameVal);
     formData.append('entry.1649066047', contactVal);
