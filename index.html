@@ -1,0 +1,1217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sourashtra Calendar – Request Form</title>
+
+<!-- Google Fonts & FontAwesome Icons -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;500;600;700;800;900&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* =========================================================
+   TRANSPARENT & TOP-ALIGNED GOOGLE SITES STYLING
+========================================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    background: transparent !important;
+    font-family: 'Outfit', 'Noto Sans Tamil', sans-serif;
+    color: #0F172A;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.embed-container {
+    width: 100%;
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 4px 12px 24px 12px;
+}
+
+.form-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid rgba(226, 232, 240, 0.85);
+    border-radius: 20px;
+    padding: 20px 22px 24px 22px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+/* Centered Top Action Buttons Bar with Navy/Steel Blue Styling */
+.top-actions-bar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    width: 100%;
+    flex-wrap: wrap;
+}
+
+.sample-btn, .lang-toggle-btn {
+    background: #1E3A8A; /* Navy Blue */
+    border: 1.5px solid #1D4ED8;
+    color: #FFFFFF;
+    padding: 7px 16px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 8px rgba(30, 58, 138, 0.25);
+}
+
+.sample-btn i, .lang-toggle-btn i {
+    color: #FACC15; /* Yellow Icon Accent */
+}
+
+.sample-btn span {
+    color: #FFFFFF;
+}
+
+.lang-toggle-btn span {
+    color: #FACC15; /* High-Contrast Yellow Text */
+}
+
+.sample-btn:hover, .lang-toggle-btn:hover {
+    background: #2563EB;
+    border-color: #3B82F6;
+    transform: translateY(-1px);
+    box-shadow: 0 5px 12px rgba(30, 58, 138, 0.35);
+}
+
+.header-wrapper {
+    text-align: center;
+    margin-bottom: 18px;
+    padding: 0;
+    width: 100%;
+}
+
+.brand-header {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 2px;
+    flex-wrap: wrap;
+}
+
+.brand-icon {
+    width: 42px;
+    height: 42px;
+    background: linear-gradient(135deg, #1E3A8A, #3B82F6);
+    color: #FACC15;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+}
+
+.brand-title {
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 50%, #1D4ED8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.3px;
+}
+
+.creator-attribution {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #475569;
+    margin-top: 2px;
+    letter-spacing: 0.2px;
+}
+
+.enquiry-attribution {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #1E3A8A;
+    margin-top: 2px;
+    margin-bottom: 4px;
+    letter-spacing: 0.2px;
+}
+
+.enquiry-attribution a {
+    color: #1D4ED8;
+    text-decoration: none;
+}
+
+.enquiry-attribution a:hover {
+    text-decoration: underline;
+}
+
+/* Live Status Ticker Bar */
+.live-status-container {
+    background: linear-gradient(135deg, #F0FDF4 0%, #EFF6FF 100%);
+    border: 1.5px solid #BBF7D0;
+    border-radius: 14px;
+    margin: 12px 0 20px 0;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+    transition: all 0.3s ease;
+}
+
+.status-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    cursor: pointer;
+    user-select: none;
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.status-header:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.status-title-wrap {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: #15803D;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #22C55E;
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+    100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+
+.status-summary-pill {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #047857;
+    background: #DCFCE7;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid #BBF7D0;
+}
+
+.status-chevron {
+    color: #15803D;
+    font-size: 12px;
+    transition: transform 0.3s ease;
+}
+
+.status-chevron.rotate {
+    transform: rotate(180deg);
+}
+
+.status-dropdown-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease-out;
+    background: #FFFFFF;
+    border-top: 1px dashed #A7F3D0;
+}
+
+.status-dropdown-content.open {
+    max-height: 450px;
+    transition: max-height 0.35s ease-in;
+}
+
+.status-grid {
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.status-badge-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    background: #F8FAFC;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+}
+
+.status-badge-row i {
+    color: #1E3A8A;
+    width: 20px;
+    text-align: center;
+}
+
+.status-badge-row strong {
+    color: #059669;
+}
+
+/* Responses List Select / Dropdown Box */
+.response-list-box {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E3A8A;
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+    font-family: 'Outfit', 'Noto Sans Tamil', sans-serif;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231E3A8A' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+    padding-right: 32px;
+}
+
+.response-list-box option {
+    font-weight: 600;
+    color: #0F172A;
+    background: #FFFFFF;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.field-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: #1E293B;
+    margin-bottom: 6px;
+}
+
+.field-label i {
+    color: #1E3A8A;
+    font-size: 15px;
+    width: 18px;
+    text-align: center;
+}
+
+.required-star {
+    color: #EF4444;
+}
+
+.input-control {
+    width: 100%;
+    padding: 13px 16px;
+    font-size: 15px;
+    font-family: 'Outfit', 'Noto Sans Tamil', sans-serif;
+    color: #0F172A;
+    background: #FFFFFF;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+textarea.input-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.input-control::placeholder {
+    color: #94A3B8;
+}
+
+.input-control:focus {
+    border-color: #1E3A8A;
+    box-shadow: 0 0 0 3.5px rgba(30, 58, 138, 0.15);
+}
+
+select.input-control {
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231E3A8A' stroke-width='2.5'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 16px;
+    padding-right: 42px;
+}
+
+/* Conditional Postal Address Box Styling */
+#addressGroup {
+    display: none;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.address-note {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: #1E3A8A;
+    background: #EFF6FF;
+    border: 1.5px solid #BFDBFE;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+/* Dynamic Breakdown Box */
+.donation-info-box {
+    display: none;
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-left: 4px solid #1E3A8A;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    font-size: 13px;
+    color: #1E293B;
+    line-height: 1.5;
+}
+
+.donation-info-box strong {
+    color: #1E3A8A;
+}
+
+.donation-info-box .inc-tag {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #059669;
+    background: #ECFDF5;
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 1px solid #A7F3D0;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+    background: #F1F5F9;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid #E2E8F0;
+    cursor: pointer;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #1E3A8A;
+    cursor: pointer;
+}
+
+.checkbox-option label {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1E293B;
+    cursor: pointer;
+}
+
+.payment-section {
+    background: linear-gradient(135deg, #F8FAFC 0%, #EFF6FF 100%);
+    border: 1.5px solid #CBD5E1;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+.payment-title {
+    font-size: 15px;
+    font-weight: 800;
+    color: #1E3A8A;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.payment-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+}
+
+.qr-box {
+    text-align: center;
+    background: #FFFFFF;
+    padding: 8px;
+    border-radius: 12px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    flex: 0 0 140px;
+    margin: 0 auto;
+}
+
+.qr-box img {
+    width: 124px;
+    height: 124px;
+    object-fit: contain;
+    border-radius: 6px;
+}
+
+.bank-info-box {
+    flex: 1 1 240px;
+    font-size: 13px;
+    color: #334155;
+    line-height: 1.6;
+}
+
+.upi-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #FFFFFF;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid #CBD5E1;
+    margin-bottom: 8px;
+    font-weight: 800;
+    color: #1E3A8A;
+}
+
+.copy-btn {
+    background: #1E3A8A;
+    color: #FFFFFF;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: auto;
+    transition: background 0.2s;
+}
+
+.copy-btn:hover {
+    background: #2563EB;
+}
+
+.bank-details-list {
+    background: #FFFFFF;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #E2E8F0;
+    font-size: 12.5px;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 15px 24px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #1E3A8A 0%, #1D4ED8 100%);
+    color: #FACC15;
+    font-size: 17px;
+    font-weight: 800;
+    font-family: 'Outfit', 'Noto Sans Tamil', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(30, 58, 138, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.25s ease;
+    margin-top: 22px;
+}
+
+.submit-btn i {
+    color: #FACC15;
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #1D4ED8 0%, #2563EB 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(30, 58, 138, 0.45);
+}
+
+.submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.success-card {
+    display: none;
+    text-align: center;
+    padding: 24px 12px;
+}
+
+.success-icon {
+    width: 64px;
+    height: 64px;
+    background: #10B981;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 30px;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+}
+
+.success-title {
+    font-size: 22px;
+    font-weight: 800;
+    color: #065F46;
+    margin-bottom: 8px;
+}
+
+.success-desc {
+    font-size: 15px;
+    color: #047857;
+    line-height: 1.5;
+}
+
+.footer-note {
+    text-align: center;
+    font-size: 12.5px;
+    color: #64748B;
+    margin-top: 18px;
+}
+
+@media (max-width: 480px) {
+    .embed-container { padding: 0 8px 16px 8px; }
+    .form-card { padding: 16px 14px; border-radius: 16px; }
+    .top-actions-bar { margin-bottom: 10px; }
+    .sample-btn, .lang-toggle-btn { padding: 5px 12px; font-size: 12px; }
+    .brand-title { font-size: 20px; }
+    .submit-btn { padding: 14px; font-size: 15.5px; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="embed-container">
+    <div class="form-card">
+
+        <!-- Top Actions Bar -->
+        <div class="top-actions-bar">
+            <a href="https://drive.google.com/file/d/181wgwvFT2NJLHQ9S-GP7QNjA6CMXJY2S/view?usp=sharing" target="_blank" class="sample-btn">
+                <i class="fa-solid fa-file-pdf"></i>
+                <span id="sampleBtnText">Sample</span>
+            </a>
+
+            <button type="button" class="lang-toggle-btn" onclick="toggleLanguage()" id="langToggleBtn">
+                <i class="fa-solid fa-language"></i>
+                <span id="langBtnText">தமிழ்</span>
+            </button>
+        </div>
+
+        <!-- Header -->
+        <div class="header-wrapper">
+            <div class="brand-header">
+                <div class="brand-icon">
+                    <i class="fa-solid fa-calendar-days"></i>
+                </div>
+                <h1 class="brand-title" id="txtTitle">Sourashtra Calendar</h1>
+            </div>
+            
+            <div class="creator-attribution" id="txtCreator">
+                Creator: SOURAN Parasarar Vaanaal Swadesh
+            </div>
+            
+            <div class="enquiry-attribution" id="txtEnquiry">
+                Enquiry Email-id: <a href="mailto:swadesh@sowrashtraschool.in">swadesh@sowrashtraschool.in</a>
+            </div>
+        </div>
+
+        <!-- Live Status Ticker -->
+        <div class="live-status-container">
+            <div class="status-header" onclick="toggleStatusDropdown()">
+                <div class="status-title-wrap">
+                    <span class="pulse-dot"></span>
+                    <span id="txtTickerHeading">Live Update</span>
+                </div>
+                <div class="status-summary-pill" id="quickSummaryPill">
+                    <i class="fa-solid fa-spinner fa-spin"></i> Loading...
+                </div>
+                <i class="fa-solid fa-chevron-down status-chevron" id="statusChevron"></i>
+            </div>
+            
+            <div class="status-dropdown-content" id="statusDropdownContent">
+                <div class="status-grid" id="tickerContent">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Frontend Form -->
+        <form id="calendarForm" onsubmit="handleFormSubmit(event)">
+            
+            <!-- 1. Name (Mandatory) -->
+            <div class="form-group">
+                <label for="name" class="field-label">
+                    <i class="fa-solid fa-user"></i>
+                    <span id="lblName">Name <span class="required-star">*</span></span>
+                </label>
+                <input type="text" id="name" class="input-control" placeholder="Enter your full name" required>
+            </div>
+
+            <!-- 2. Contact Number (Optional) -->
+            <div class="form-group">
+                <label for="contact" class="field-label">
+                    <i class="fa-solid fa-phone"></i>
+                    <span id="lblContact">Contact Number</span>
+                </label>
+                <input type="tel" id="contact" class="input-control" placeholder="Preferably WhatsApp No">
+            </div>
+
+            <!-- 3. Email-id (Optional) -->
+            <div class="form-group">
+                <label for="email" class="field-label">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span id="lblEmail">Email-id</span>
+                </label>
+                <input type="email" id="email" class="input-control" placeholder="Enter your Email-id">
+            </div>
+
+            <!-- 4. Donation Dropdown (Mandatory) -->
+            <div class="form-group">
+                <label for="donationQty" class="field-label">
+                    <i class="fa-solid fa-hand-holding-heart"></i>
+                    <span id="lblDonation">Donation / Sponsorship <span class="required-star">*</span></span>
+                </label>
+                <select id="donationQty" class="input-control" onchange="updateDonationInfo()" required>
+                    <option value="" id="optDonationDefault">-- Select Donation Amount --</option>
+                    <option value="500">Rs. 500</option>
+                    <option value="1000">Rs. 1000</option>
+                    <option value="1500">Rs. 1500</option>
+                    <option value="2000">Rs. 2000</option>
+                </select>
+
+                <!-- Dynamic Breakdown Display -->
+                <div class="donation-info-box" id="donationInfoBox">
+                    <div id="donationInfoText"></div>
+                    <span class="inc-tag" id="tagInclusive"><i class="fa-solid fa-circle-check"></i> Design + Print + Courier included</span>
+                </div>
+            </div>
+
+            <!-- 5. No. of Calendars & Seva Toggle (Mandatory) -->
+            <div class="form-group">
+                <label for="numCalendars" class="field-label">
+                    <i class="fa-solid fa-calculator"></i>
+                    <span id="lblNumCal">No. of Calendars <span class="required-star">*</span></span>
+                </label>
+                <input type="number" id="numCalendars" class="input-control" placeholder="Select Donation first" min="0" max="15" oninput="validateCalendarInput()" required disabled>
+                
+                <div class="checkbox-option">
+                    <input type="checkbox" id="allToSeva" onchange="toggleAllToSeva()">
+                    <label for="allToSeva" id="lblAllToSeva">Donate all calendars to Bhasa Seva</label>
+                </div>
+            </div>
+
+            <!-- Conditional Postal Address Field (Shown when calendars > 0) -->
+            <div class="form-group" id="addressGroup">
+                <div class="address-note" id="txtAddressNote">
+                    <i class="fa-solid fa-truck-fast"></i> Please enter your postal address to courier the calendar.
+                </div>
+                <label for="postalAddress" class="field-label">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span id="lblPostalAddress">Postal Address</span>
+                </label>
+                <textarea id="postalAddress" class="input-control" placeholder="Enter full postal address with Pincode"></textarea>
+            </div>
+
+            <!-- 6. Payment Information Box -->
+            <div class="payment-section">
+                <div class="payment-title">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span id="txtPaymentTitle">Payment Details</span>
+                </div>
+                <div class="payment-grid">
+                    <div class="qr-box">
+                        <img src="https://lh3.googleusercontent.com/d/1jiOTrmw6lg5OK9RYPWlrvnaF7Wfb4IyO" alt="Payment QR Code">
+                        <div style="font-size: 11px; font-weight: 700; color: #475569; margin-top: 4px;" id="txtScanPay">Scan to Pay</div>
+                    </div>
+                    <div class="bank-info-box">
+                        <div class="upi-row">
+                            <i class="fa-solid fa-mobile-screen-button"></i>
+                            <span>maramani@okicici</span>
+                            <button type="button" class="copy-btn" onclick="copyUPI()"><i class="fa-regular fa-copy"></i> <span id="txtCopy">Copy</span></button>
+                        </div>
+                        <div class="bank-details-list">
+                            <div><strong>Name:</strong> A.Ramani</div>
+                            <div><strong>Bank:</strong> ICICI Bank (Savings)</div>
+                            <div><strong>A/c No:</strong> 156301500920</div>
+                            <div><strong>IFSC:</strong> ICIC0001563</div>
+                            <div><strong>Branch:</strong> Trichy K K Nagar</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 7. Bank Transaction Ref Number (Mandatory) -->
+            <div class="form-group">
+                <label for="txnRef" class="field-label">
+                    <i class="fa-solid fa-receipt"></i>
+                    <span id="lblTxnRef">Bank Transaction Ref Number <span class="required-star">*</span></span>
+                </label>
+                <input type="text" id="txnRef" class="input-control" placeholder="e.g., 12-digit UTR / Txn Ref No." required>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="submit-btn" id="btnSubmit">
+                <span id="btnSubmitText">Submit</span>
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successCard" class="success-card">
+            <div class="success-icon">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h2 class="success-title" id="txtSuccessTitle">Submission Received!</h2>
+            <p class="success-desc" id="txtSuccessDesc">
+                Thank you! Your details have been successfully recorded. We will contact you shortly.
+            </p>
+        </div>
+
+        <div class="footer-note" id="txtFooterNote">
+            <i class="fa-solid fa-shield-halved"></i>
+            Your information will only be used for order verification and communication.
+        </div>
+
+    </div>
+</div>
+
+<script>
+const FORM_ACTION = "https://docs.google.com/forms/d/e/1FAIpQLSdMw66Nn0x-10UJ5ctF9gHUtV8okPHmeg8UBn2Vy3ZaWOC2PQ/formResponse";
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJtfaE9r60j__AiOlkw9Krd51EKYso8dgSfGuzsejNSLSDT8U-Lm70PkUqWwt_fjwl_WEuvWAv8GfG/pub?gid=1891138295&single=true&output=csv";
+
+let currentLang = 'en';
+let sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
+let isStatusOpen = false;
+
+const translations = {
+    en: {
+        sampleBtn: "Sample",
+        langBtn: "தமிழ்",
+        title: "Sourashtra Calendar",
+        tickerTitle: "Live Update",
+        lblName: 'Name <span class="required-star">*</span>',
+        phName: "Enter your full name",
+        lblContact: "Contact Number",
+        phContact: "Preferably WhatsApp No",
+        lblEmail: 'Email-id',
+        phEmail: "Enter your Email-id",
+        lblDonation: 'Donation / Sponsorship <span class="required-star">*</span>',
+        optDonationDef: "-- Select Donation Amount --",
+        lblNumCal: 'No. of Calendars <span class="required-star">*</span>',
+        phNumCalDisabled: "Select Donation first",
+        phNumCalRange: "Enter 0 to {max}",
+        phNumCalSeva: "0 (Donated to Bhasa Seva)",
+        lblAllToSeva: "Donate all calendars to Bhasa Seva",
+        addressNote: "Please enter your postal address to courier the calendar.",
+        lblPostalAddress: 'Postal Address',
+        phPostalAddress: "Enter full postal address with Pincode",
+        paymentTitle: "Payment Details",
+        scanPay: "Scan to Pay",
+        copyBtn: "Copy",
+        copiedBtn: "Copied!",
+        lblTxnRef: 'Bank Transaction Ref Number <span class="required-star">*</span>',
+        phTxnRef: "e.g., 12-digit UTR / Txn Ref No.",
+        incTag: '<i class="fa-solid fa-circle-check"></i> Design + Print + Courier included',
+        btnSubmit: "Submit",
+        successTitle: "Submission Received!",
+        successDesc: "Thank you! Your details have been successfully recorded.",
+        footerNote: "Your information will only be used for order verification and communication.",
+        tickerTotal: "Total Responses",
+        tickerBooked: "Total Calendars Booked",
+        creatorText: "Creator: SOURAN Parasarar Vaanaal Swadesh",
+        enquiryText: 'Enquiry Email-id: <a href="mailto:swadesh@sowrashtraschool.in">swadesh@sowrashtraschool.in</a>',
+        alertMaxLimit: "For the selected donation amount, the maximum allowed calendars is {max}. Setting value to {max}.",
+        noResponsesYet: "No responses recorded yet"
+    },
+    ta: {
+        sampleBtn: "மாதிரி",
+        langBtn: "English",
+        title: "ஸௌராஷ்ட்ர காலண்டர்",
+        tickerTitle: "நிலவரம்",
+        lblName: 'பெயர் <span class="required-star">*</span>',
+        phName: "உங்கள் முழு பெயரை உள்ளிடவும்",
+        lblContact: "தொடர்பு எண்",
+        phContact: "முன்னுரிமை WhatsApp எண்",
+        lblEmail: 'மின்னஞ்சல் முகவரி',
+        phEmail: "உங்கள் மின்னஞ்சலை உள்ளிடவும்",
+        lblDonation: 'நிதி உதவி / ஸ்பான்சர்ஷிப் <span class="required-star">*</span>',
+        optDonationDef: "-- நிதி உதவி தொகையைத் தேர்ந்தெடுக்கவும் --",
+        lblNumCal: 'காலண்டர்கள் எண்ணிக்கை <span class="required-star">*</span>',
+        phNumCalDisabled: "முதலில் நிதி தொகையைத் தேர்ந்தெடுக்கவும்",
+        phNumCalRange: "0 முதல் {max} வரை உள்ளிடவும்",
+        phNumCalSeva: "0 (பாஷா சேவைக்கு வழங்கப்பட்டது)",
+        lblAllToSeva: "அனைத்து காலண்டர்களையும் பாஷா சேவைக்கு வழங்குகிறேன்",
+        addressNote: "காலண்டரை கூரியர் அனுப்ப உங்கள் முகவரியை உள்ளிடவும்.",
+        lblPostalAddress: 'முகவரி',
+        phPostalAddress: "அஞ்சல் குறியீட்டுடன் (Pincode) முழு முகவரியை உள்ளிடவும்",
+        paymentTitle: "பணம் செலுத்தும் விவரங்கள்",
+        scanPay: "ஸ்கேன் செய்து செலுத்தவும்",
+        copyBtn: "நகலெடு",
+        copiedBtn: "நகலெடுக்கப்பட்டது!",
+        lblTxnRef: 'வங்கி பரிவர்த்தனை எண் <span class="required-star">*</span>',
+        phTxnRef: "எ.கா: 12-இலக்க UTR / குறிப்பு எண்",
+        incTag: '<i class="fa-solid fa-circle-check"></i> வடிவமைப்பு + அச்சு + கூரியர் கட்டணம் உட்பட',
+        btnSubmit: "சமர்ப்பிக்கவும்",
+        successTitle: "பதிவு பெறப்பட்டது!",
+        successDesc: "நன்றி! உங்கள் விவரங்கள் வெற்றிகரமாகப் பதிவு செய்யப்பட்டன.",
+        footerNote: "தொடர்பு கொள்ள மற்றும் உறுதிப்படுத்த மட்டுமே உங்கள் தகவல்கள் பயன்படுத்தப்படும்.",
+        tickerTotal: "மொத்தம் பதிவுகள்",
+        tickerBooked: "மொத்த முன்பதிவு செய்யப்பட்ட காலண்டர்கள்",
+        creatorText: "உருவாக்கம்: ஸௌரன் பராஸரர் வாணால் ஸ்வதேஷ்",
+        enquiryText: 'விசாரணை மின்னஞ்சல்: <a href="mailto:swadesh@sowrashtraschool.in">swadesh@sowrashtraschool.in</a>',
+        alertMaxLimit: "தேர்ந்தெடுக்கப்பட்ட தொகைக்கு அதிகபட்சமாக {max} காலண்டர்கள் மட்டுமே பெற முடியும். எண்ணிக்கை {max} என மாற்றப்பட்டுள்ளது.",
+        noResponsesYet: "இன்னும் பதிவுகள் இல்லை"
+    }
+};
+
+const donationDetails = {
+    "500": {
+        en: "<strong>Rs. 500:</strong> Up to <strong>3</strong> calendars to you + <strong>3</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 500:</strong> உங்களுக்கு <strong>3</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>3</strong>",
+        max: 3
+    },
+    "1000": {
+        en: "<strong>Rs. 1000:</strong> Up to <strong>7</strong> calendars to you + <strong>6</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 1000:</strong> உங்களுக்கு <strong>7</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>6</strong>",
+        max: 7
+    },
+    "1500": {
+        en: "<strong>Rs. 1500:</strong> Up to <strong>10</strong> calendars to you + <strong>10</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 1500:</strong> உங்களுக்கு <strong>10</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>10</strong>",
+        max: 10
+    },
+    "2000": {
+        en: "<strong>Rs. 2000:</strong> Up to <strong>15</strong> calendars to you + <strong>11</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 2000:</strong> உங்களுக்கு <strong>15</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>11</strong>",
+        max: 15
+    }
+};
+
+function toggleLanguage() {
+    currentLang = currentLang === 'en' ? 'ta' : 'en';
+    applyTranslations();
+}
+
+function toggleStatusDropdown() {
+    isStatusOpen = !isStatusOpen;
+    const content = document.getElementById('statusDropdownContent');
+    const chevron = document.getElementById('statusChevron');
+    
+    if (isStatusOpen) {
+        content.classList.add('open');
+        chevron.classList.add('rotate');
+    } else {
+        content.classList.remove('open');
+        chevron.classList.remove('rotate');
+    }
+}
+
+function copyUPI() {
+    navigator.clipboard.writeText("maramani@okicici");
+    const t = translations[currentLang];
+    const copySpan = document.getElementById('txtCopy');
+    copySpan.textContent = t.copiedBtn;
+    setTimeout(() => {
+        copySpan.textContent = t.copyBtn;
+    }, 2000);
+}
+
+function toggleAllToSeva() {
+    const isChecked = document.getElementById('allToSeva').checked;
+    const numInput = document.getElementById('numCalendars');
+    const t = translations[currentLang];
+    
+    if (isChecked) {
+        numInput.value = "0";
+        numInput.disabled = true;
+        numInput.placeholder = t.phNumCalSeva;
+        checkAddressRequirement();
+    } else {
+        updateDonationInfo();
+    }
+}
+
+function updateDonationInfo() {
+    const donationVal = document.getElementById('donationQty').value;
+    const infoBox = document.getElementById('donationInfoBox');
+    const infoText = document.getElementById('donationInfoText');
+    const numInput = document.getElementById('numCalendars');
+    const allToSeva = document.getElementById('allToSeva');
+    const t = translations[currentLang];
+
+    if (donationVal && donationDetails[donationVal]) {
+        const detail = donationDetails[donationVal];
+        infoText.innerHTML = detail[currentLang];
+        infoBox.style.display = 'block';
+
+        if (allToSeva.checked) {
+            numInput.value = "0";
+            numInput.disabled = true;
+            numInput.placeholder = t.phNumCalSeva;
+        } else {
+            numInput.disabled = false;
+            numInput.min = 0;
+            numInput.max = detail.max;
+            numInput.placeholder = t.phNumCalRange.replace('{max}', detail.max);
+            
+            // Validate and adjust if existing value exceeds the newly selected donation tier limit
+            validateCalendarInput();
+        }
+    } else {
+        infoBox.style.display = 'none';
+        numInput.disabled = true;
+        numInput.value = '';
+        numInput.placeholder = t.phNumCalDisabled;
+    }
+    checkAddressRequirement();
+}
+
+/* Instant Real-Time Validation Function */
+function validateCalendarInput() {
+    const donationVal = document.getElementById('donationQty').value;
+    const numInput = document.getElementById('numCalendars');
+    const t = translations[currentLang];
+
+    if (donationVal && donationDetails[donationVal]) {
+        const maxLimit = donationDetails[donationVal].max;
+        const enteredVal = parseInt(numInput.value, 10);
+
+        if (!isNaN(enteredVal) && enteredVal > maxLimit) {
+            const alertMsg = t.alertMaxLimit.replace(/\{max\}/g, maxLimit);
+            alert(alertMsg);
+            numInput.value = maxLimit;
+        }
+    }
+    checkAddressRequirement();
+}
+
+function checkAddressRequirement() {
+    const numInput = document.getElementById('numCalendars');
+    const addressGroup = document.getElementById('addressGroup');
+    const addressNote = document.getElementById('txtAddressNote');
+    const t = translations[currentLang];
+    
+    const val = parseInt(numInput.value, 10);
+    if (!isNaN(val) && val > 0) {
+        addressGroup.style.display = 'block';
+        addressNote.innerHTML = `<i class="fa-solid fa-truck-fast"></i> ${t.addressNote}`;
+    } else {
+        addressGroup.style.display = 'none';
+    }
+}
+
+function applyTranslations() {
+    const t = translations[currentLang];
+    
+    document.getElementById('sampleBtnText').textContent = t.sampleBtn;
+    document.getElementById('langBtnText').textContent = t.langBtn;
+    document.getElementById('txtTitle').textContent = t.title;
+    document.getElementById('txtTickerHeading').textContent = t.tickerTitle;
+    
+    document.getElementById('lblName').innerHTML = t.lblName;
+    document.getElementById('name').placeholder = t.phName;
+    
+    document.getElementById('lblContact').textContent = t.lblContact;
+    document.getElementById('contact').placeholder = t.phContact;
+
+    document.getElementById('lblEmail').innerHTML = t.lblEmail;
+    document.getElementById('email').placeholder = t.phEmail;
+    
+    document.getElementById('lblDonation').innerHTML = t.lblDonation;
+    document.getElementById('optDonationDefault').textContent = t.optDonationDef;
+    
+    document.getElementById('lblNumCal').innerHTML = t.lblNumCal;
+    document.getElementById('lblAllToSeva').textContent = t.lblAllToSeva;
+
+    document.getElementById('lblPostalAddress').textContent = t.lblPostalAddress;
+    document.getElementById('postalAddress').placeholder = t.phPostalAddress;
+
+    document.getElementById('txtPaymentTitle').textContent = t.paymentTitle;
+    document.getElementById('txtScanPay').textContent = t.scanPay;
+    document.getElementById('txtCopy').textContent = t.copyBtn;
+    
+    document.getElementById('lblTxnRef').innerHTML = t.lblTxnRef;
+    document.getElementById('txnRef').placeholder = t.phTxnRef;
+    
+    document.getElementById('tagInclusive').innerHTML = t.incTag;
+    
+    document.getElementById('btnSubmitText').textContent = t.btnSubmit;
+    document.getElementById('txtSuccessTitle').textContent = t.successTitle;
+    document.getElementById('txtSuccessDesc').textContent = t.successDesc;
+    document.getElementById('txtFooterNote').innerHTML = `<i class="fa-solid fa-shield-halved"></i> ${t.footerNote}`;
+    document.getElementById('txtCreator').textContent = t.creatorText;
+    document.getElementById('txtEnquiry').innerHTML = t.enquiryText;
+    
+    updateDonationInfo();
+    renderTicker();
+}
+
+async function fetchLiveSheetData() {
+    try {
+        const response = await fetch(CSV_URL);
+        if (!response.ok) throw new Error("CSV fetch failed");
+        const csvText = await response.text();
+        
+        const rows = csvText.split(/\r?\n/).map(row => row.split(',').map(c => c ? c.replace(/^"(.*)"$/, '$1').trim() : ''));
+        
+        sheetStats = { totalResponses: 0, totalAmount: 0, responderNames: [] };
+
+        for (let i = 1; i < rows.length; i++) {
+            const row = rows[i];
+            if (!row || row.length < 2) continue;
+            
+            // Name field assumption: Column index 1
+            const name = row[1] || "";
+            if (!row[0] && !name) continue;
+            
+            sheetStats.totalResponses++;
+            if (name) sheetStats.responderNames.push(name);
+
+            const amtValStr = row[4] || "";  
+            const amtMatch = amtValStr.match(/\d+/);
+            if (amtMatch) {
+                const amt = parseInt(amtMatch[0], 10);
+                if (!isNaN(amt) && amt > 0) sheetStats.totalAmount += amt;
+            }
+        }
+
+        sheetStats.totalCalendarsBooked = Math.floor(sheetStats.totalAmount / 75);
+
+        renderTicker();
+
+    } catch (error) {
+        console.warn("Live ticker fetch failed:", error);
+        sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
+        renderTicker();
+    }
+}
+
+function renderTicker() {
+    const tickerContent = document.getElementById('tickerContent');
+    const quickSummaryPill = document.getElementById('quickSummaryPill');
+    const t = translations[currentLang];
+
+    quickSummaryPill.innerHTML = `${sheetStats.totalCalendarsBooked} ${currentLang === 'ta' ? 'காலண்டர்கள்' : 'Booked'}`;
+
+    // Build the Options list for the Responses List Box
+    let namesOptionsHTML = `<option value="" disabled selected>${t.tickerTotal}: ${sheetStats.totalResponses}</option>`;
+    if (sheetStats.responderNames.length > 0) {
+        sheetStats.responderNames.forEach((personName, idx) => {
+            namesOptionsHTML += `<option value="${idx}">${idx + 1}. ${personName}</option>`;
+        });
+    } else {
+        namesOptionsHTML += `<option value="" disabled>${t.noResponsesYet}</option>`;
+    }
+
+    tickerContent.innerHTML = `
+        <div style="width: 100%;">
+            <select class="response-list-box" onclick="event.stopPropagation();">
+                ${namesOptionsHTML}
+            </select>
+        </div>
+        <div class="status-badge-row">
+            <span><i class="fa-solid fa-calendar-check"></i> ${t.tickerBooked}</span>
+            <strong>${sheetStats.totalCalendarsBooked}</strong>
+        </div>
+    `;
+}
+
+async function handleFormSubmit(event) {
+    event.preventDefault();
+
+    const nameVal = document.getElementById('name').value.trim();
+    const contactVal = document.getElementById('contact').value.trim();
+    const emailVal = document.getElementById('email').value.trim();
+    const donationVal = document.getElementById('donationQty').value || "";
+    const allToSevaChecked = document.getElementById('allToSeva').checked;
+    const numCalVal = allToSevaChecked ? "0" : (document.getElementById('numCalendars').value !== "" ? document.getElementById('numCalendars').value : "");
+    const txnRefVal = document.getElementById('txnRef').value.trim();
+    const postalVal = document.getElementById('postalAddress').value.trim();
+
+    // 4 Mandatory Fields Check: Name, Donation, No. of Calendars, Bank Ref No
+    if (!nameVal || !donationVal || numCalVal === "" || numCalVal === null || !txnRefVal) {
+        alert(currentLang === 'ta' ? 'தயவுசெய்து தேவையான அனைத்து விவரங்களையும் (பெயர், நிதி தொகை, காலண்டர்கள் எண்ணிக்கை, வங்கி பரிவர்த்தனை எண்) நிரப்பவும்.' : 'Please fill in all 4 mandatory fields (Name, Donation, No. of Calendars, Bank Ref No).');
+        return;
+    }
+
+    const btn = document.getElementById('btnSubmit');
+    btn.disabled = true;
+
+    // Google Form Mapping Payload
+    const formData = new URLSearchParams();
+    formData.append('entry.699083134', nameVal);
+    formData.append('entry.1649066047', contactVal);
+    formData.append('entry.661015263', emailVal);
+    formData.append('entry.731913060', donationVal);
+    formData.append('entry.1570639170', numCalVal);
+    formData.append('entry.657185047', txnRefVal);
+    formData.append('entry.806483239', postalVal);
+
+    try {
+        await fetch(FORM_ACTION, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: formData.toString()
+        });
+    } catch (e) {
+        console.warn("Direct POST fallback triggered", e);
+    }
+
+    document.getElementById('calendarForm').style.display = 'none';
+    document.getElementById('successCard').style.display = 'block';
+    
+    setTimeout(() => {
+        fetchLiveSheetData();
+    }, 2000);
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    applyTranslations();
+    fetchLiveSheetData();
+});
+</script>
+
+</body>
+</html>
