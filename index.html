@@ -1095,16 +1095,17 @@ async function fetchLiveSheetData() {
 
         for (let i = 1; i < rows.length; i++) {
             const row = rows[i];
-            if (!row || row.length < 2) continue;
+            if (!row || row.length < 3) continue;
             
+            // Index 0: Timestamp, Index 1: Name, Index 2: Donation, Index 3: No. of Calendars
             const name = row[1] || "";
             if (!row[0] && !name) continue;
             
             sheetStats.totalResponses++;
             if (name) sheetStats.responderNames.push(name);
 
-            // Assuming the donation amount is in column index 4 (or adjust index if needed)
-            const amtValStr = row[4] || "";  
+            // Read Donation amount from Index 2
+            const amtValStr = row[2] || "";  
             const amtMatch = amtValStr.match(/\d+/);
             if (amtMatch) {
                 const amt = parseInt(amtMatch[0], 10);
