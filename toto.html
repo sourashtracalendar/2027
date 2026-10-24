@@ -43,7 +43,7 @@
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
   
-  /* Submit button exact match to input height */
+  /* Submit button exact match to input height & vertical alignment */
   .submit{width:100%;font-size:16px;height:43px;display:flex;align-items:center;justify-content:center;margin-top:0}
   
   dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:380px;text-align:center;width:92%}
@@ -106,11 +106,11 @@
       </div>
     </div>
 
-    <!-- PayLah Number & Submit Button Side-by-Side -->
+    <!-- PayLah No & Submit Button Side-by-Side -->
     <div class="row" style="margin-top:12px">
       <div>
-        <label for="tmobile" style="margin-top:0">PayLah Number</label>
-        <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
+        <label for="tmobile" style="margin-top:0">PayLah No (if different) – optional</label>
+        <input type="tel" id="tmobile" inputmode="numeric" placeholder="if not WA#">
       </div>
       <div>
         <button type="submit" class="submit" id="submitBtn" disabled>Submit</button>
