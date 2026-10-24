@@ -43,9 +43,12 @@
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
   .submit{width:100%;margin-top:16px;font-size:17px}
-  dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:360px;text-align:center;width:90%}
+  
+  dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:380px;text-align:center;width:92%}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   #qr{display:flex;justify-content:center;margin:12px 0;background:#fff;padding:10px;border-radius:8px}
+  .action-btns{display:flex;gap:8px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+  .action-btns button{flex:1;font-size:14px;padding:8px 12px}
 </style>
 </head>
 <body>
@@ -90,7 +93,7 @@
     <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
     <div class="msg" id="namesMsg"></div>
 
-    <!-- Transferred Date & PayLah/PayNow Button Side-by-Side -->
+    <!-- Transferred Date & PayLah Button Side-by-Side -->
     <div class="row" style="margin-top:12px">
       <div>
         <label for="date" style="margin-top:0">Transferred Date <span class="req">*</span></label>
@@ -112,12 +115,23 @@
   </form>
 </div>
 
+<!-- PAYMODAL DIALOG (Works for Mobile & Desktop) -->
 <dialog id="payDlg">
-  <h3 style="margin:0 0 4px">Pay with PayLah / Banking App</h3>
+  <h3 style="margin:0 0 4px">Pay with PayLah / PayNow</h3>
   <div class="muted" id="payInfo"></div>
+  
   <div id="qr"></div>
-  <div class="muted" id="payHelp">Scan with PayLah or any SG banking app to pay <b id="payTo"></b>.</div>
-  <p><button type="button" id="closeDlg" style="background:var(--muted)">Close</button></p>
+
+  <div class="action-btns" id="mobControls">
+    <button type="button" id="copyNoBtn" class="sec">Copy Number</button>
+    <button type="button" id="copyAmtBtn" class="sec">Copy Amount</button>
+  </div>
+
+  <div class="muted" id="payHelp" style="margin-top:10px"></div>
+
+  <p style="margin-top:14px;margin-bottom:0">
+    <button type="button" id="closeDlg" style="background:var(--muted);width:100%">Close</button>
+  </p>
 </dialog>
 
 <script>
@@ -148,7 +162,7 @@ function parseCSV(text){
   const rows=[];let row=[],cur="",q=false;
   for(let i=0;i<text.length;i++){
     const c=text[i];
-    if(q){ if(c=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else q=false; }
     else if(c=='"') q=true;
     else if(c==","){row.push(cur);cur="";}
     else if(c=="\n"||c=="\r"){ if(c=="\r"&&text[i+1]=="\n")i++; row.push(cur);cur=""; if(row.some(x=>x.trim()!==""))rows.push(row); row=[]; }
@@ -179,7 +193,6 @@ function todayStr(){
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
 
-/* Set default date to today */
 $("date").value = todayStr();
 
 /* ============ SGQR / PayNow Payload Generator (EMVCo) ============ */
@@ -269,6 +282,15 @@ function recalc(){
 
 function nameList(){return $("namesIn").value.split(",").map(s=>s.trim()).filter(Boolean);}
 
+async function copyText(str, msg) {
+  try {
+    await navigator.clipboard.writeText(str);
+    $("payHelp").innerHTML = `<span class="ok">✓ ${msg}</span>`;
+  } catch(e) {
+    $("payHelp").innerHTML = `<span class="bad">Copy failed. Please copy manually: ${str}</span>`;
+  }
+}
+
 function updatePaymentLink(){
   const amt=parseFloat($("amount").value)||0;
   const payLink = $("payLink");
@@ -281,43 +303,40 @@ function updatePaymentLink(){
 
   const id = current.pay;
   const ref = current.code || current.no;
-  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && innerWidth < 900);
+  const cleanPhone = String(id).replace(/\D/g,"");
 
   payLink.removeAttribute("aria-disabled");
 
-  if(isMobileDevice){
-    // Automatically copy amount to clipboard so user can paste inside the chosen app
-    payLink.onclick = () => {
-      try { navigator.clipboard.writeText(amt.toFixed(2)); } catch(e){}
-    };
-
-    // Priority 1: Custom PayLah payment link if configured in Master sheet
+  payLink.href = "#";
+  payLink.onclick = (e) => {
+    e.preventDefault();
+    
+    // Direct redirect if custom DBS PayLah Link exists in Spreadsheet
     if(current.link){
-      payLink.href = current.link;
-    } else {
-      // Priority 2: Multi-app trigger to launch Android system chooser / SG payment app router
-      const cleanPhone = String(id).replace(/\D/g,"");
-      payLink.href = `intent://pay?mobile=${cleanPhone}&amount=${amt.toFixed(2)}&ref=${encodeURIComponent(ref)}#Intent;scheme=paynow;action=android.intent.action.VIEW;end;`;
+      location.href = current.link;
+      return;
     }
-  } else {
-    // Desktop QR generator using standard SGQR / PayNow
-    payLink.href = "#";
-    payLink.onclick = (e) => {
-      e.preventDefault();
-      $("payInfo").textContent = `S$ ${fmt(amt)} · Ref: ${ref}`;
-      $("payTo").textContent = /^\d{8}$/.test(id) ? "+65 " + id : id;
-      $("qr").innerHTML = "";
-      
-      const payload = sgPaynowPayload(amt, ref, id);
-      new QRCode($("qr"), {
-        text: payload,
-        width: 220,
-        height: 220,
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      $("payDlg").showModal();
-    };
-  }
+
+    $("payInfo").textContent = `S$ ${fmt(amt)} · Ref: ${ref}`;
+    $("qr").innerHTML = "";
+
+    // Generate Official SGQR Code
+    const payload = sgPaynowPayload(amt, ref, id);
+    new QRCode($("qr"), {
+      text: payload,
+      width: 200,
+      height: 200,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+    // Mobile Clipboard Auto-copy + Action Handlers
+    copyText(cleanPhone, `Mobile number (+65 ${cleanPhone}) copied to clipboard!`);
+    
+    $("copyNoBtn").onclick = () => copyText(cleanPhone, `Mobile (+65 ${cleanPhone}) copied!`);
+    $("copyAmtBtn").onclick = () => copyText(amt.toFixed(2), `Amount (S$ ${fmt(amt)}) copied!`);
+
+    $("payDlg").showModal();
+  };
 }
 
 function check(){
