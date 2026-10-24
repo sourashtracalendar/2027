@@ -66,7 +66,7 @@
   <form class="card" id="form" autocomplete="off" novalidate>
     <h1>Jackpot Dream Group</h1>
 
-    <!-- Batch Code -->
+    <!-- Batch Code (Used for page validation only) -->
     <label for="batch" style="margin-top:0">Batch Code <span class="req">*</span></label>
     <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
     <div class="msg" id="batchMsg"></div>
@@ -145,9 +145,9 @@ const CFG = {
     persons:  "entry.2113506963",
     names:    "entry.823235837",
     amount:   "entry.2048096547",
-    date:     "entry.11190347781",
-    tmobile:  "entry.1097018115",
-    batch:    "" 
+    date:     "entry.1190347781",
+    tmobile:  "entry.1097018115"
+    // batch is completely excluded from form submission
   },
   PAYNOW: { name: "Organiser", editable: false },
   REFRESH_MS: 30000
@@ -299,7 +299,6 @@ function updatePaymentLink(){
   const personsVal = parseInt($("persons").value) || 0;
   const namesVal = nameList().length;
 
-  // PayLah! button requires: Batch Code, Valid WhatsApp Number, Number of Persons >= 1, Total Amount > 0, and at least 1 Name entered.
   const canPay = current && waOK && personsVal >= 1 && amt > 0 && namesVal > 0;
 
   if(!canPay){
@@ -359,7 +358,6 @@ function check(){
   if(n&&p&&n!==p){nm.textContent=`${n} name(s) entered for ${p} person(s)`;nm.className="msg warn";}
   else nm.textContent="";
 
-  // Update PayLah button state dynamically on input changes
   updatePaymentLink();
 
   const base=!!current&&p>=1;
@@ -371,7 +369,7 @@ $("batch").addEventListener("input",validateBatch);
 
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
-/* ============ SUBMIT TO GOOGLE FORM ============ */
+/* ============ SUBMIT TO GOOGLE FORM (Excludes Batch) ============ */
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();
   if($("submitBtn").disabled)return;
@@ -380,25 +378,41 @@ $("form").addEventListener("submit",async e=>{
   const dt=$("date").value, [y,m,d]=dt.split("-");
   const body=new URLSearchParams();
 
-  body.set(E.whatsapp,wa);
-  body.set(E.persons,String(parseInt($("persons").value)));
-  body.set(E.names,nameList().join(", "));
-  body.set(E.amount,$("amount").value);
-  body.set(E.date+"_year",y);body.set(E.date+"_month",String(+m));body.set(E.date+"_day",String(+d));
-  body.set("fvv","1");body.set("pageHistory","0");
-  body.set(E.tmobile,tm||wa);
-  if(E.batch)body.set(E.batch,current.code);
+  // Submit ONLY required fields to Google Forms (No Batch Code submitted)
+  body.set(E.whatsapp, wa);
+  body.set(E.persons, String(parseInt($("persons").value)));
+  body.set(E.names, nameList().join(", "));
+  body.set(E.amount, $("amount").value);
+  body.set(E.date+"_year", y);
+  body.set(E.date+"_month", String(+m));
+  body.set(E.date+"_day", String(+d));
+  body.set("fvv", "1");
+  body.set("pageHistory", "0");
+  body.set(E.tmobile, tm || wa);
 
   const btn=$("submitBtn"),res=$("result");
   btn.disabled=true;btn.textContent="Submitting…";
 
   try{
-    await fetch(CFG.FORM_POST_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
-    res.textContent="✓ Submitted. Thank you! Your entry will show once verified.";res.className="msg ok";
-    $("form").reset();current=null;$("batchMsg").textContent="";$("date").value=todayStr();recalc();
+    await fetch(CFG.FORM_POST_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"application/x-www-form-urlencoded"},
+      body
+    });
+    res.textContent="✓ Submitted. Thank you! Your entry will show once verified.";
+    res.className="msg ok";
+    
+    $("form").reset();
+    current=null;
+    $("batchMsg").textContent="";
+    $("date").value=todayStr();
+    recalc();
+    
     setTimeout(loadFeed,4000);
   }catch(err){
-    res.textContent="Submission failed. Please check your connection and try again.";res.className="msg bad";
+    res.textContent="Submission failed. Please check your connection and try again.";
+    res.className="msg bad";
     btn.disabled=false;
   }
   btn.textContent="Submit";
