@@ -59,7 +59,7 @@ html, body {
     flex-wrap: wrap;
 }
 
-.sample-btn, .lang-toggle-btn {
+.sample-btn, .lang-toggle-btn, .video-toggle-btn {
     background: #1E3A8A; /* Navy Blue */
     border: 1.5px solid #1D4ED8;
     color: #FFFFFF;
@@ -76,11 +76,11 @@ html, body {
     box-shadow: 0 3px 8px rgba(30, 58, 138, 0.25);
 }
 
-.sample-btn i, .lang-toggle-btn i {
+.sample-btn i, .lang-toggle-btn i, .video-toggle-btn i {
     color: #FACC15; /* Yellow Icon Accent */
 }
 
-.sample-btn span {
+.sample-btn span, .video-toggle-btn span {
     color: #FFFFFF;
 }
 
@@ -88,11 +88,38 @@ html, body {
     color: #FACC15; /* High-Contrast Yellow Text */
 }
 
-.sample-btn:hover, .lang-toggle-btn:hover {
+.sample-btn:hover, .lang-toggle-btn:hover, .video-toggle-btn:hover {
     background: #2563EB;
     border-color: #3B82F6;
     transform: translateY(-1px);
     box-shadow: 0 5px 12px rgba(30, 58, 138, 0.35);
+}
+
+/* Collapsible Video Container */
+.video-collapse-box {
+    display: none;
+    margin-bottom: 16px;
+    background: #F8FAFC;
+    border: 1.5px solid #CBD5E1;
+    border-radius: 14px;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+.video-wrapper {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    height: 0;
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 .header-wrapper {
@@ -248,29 +275,6 @@ html, body {
     display: flex;
     flex-direction: column;
     gap: 8px;
-}
-
-.status-badge-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    font-weight: 700;
-    color: #1E293B;
-    background: #F8FAFC;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1px solid #E2E8F0;
-}
-
-.status-badge-row i {
-    color: #1E3A8A;
-    width: 20px;
-    text-align: center;
-}
-
-.status-badge-row strong {
-    color: #059669;
 }
 
 /* Responses List Select / Dropdown Box */
@@ -462,7 +466,7 @@ select.input-control {
     gap: 8px;
 }
 
-/* NEW: Clickable GPay / UPI Deep Link Button */
+/* Clickable GPay / UPI Deep Link Button */
 .gpay-direct-btn {
     display: flex;
     align-items: center;
@@ -643,7 +647,7 @@ select.input-control {
     .embed-container { padding: 0 8px 16px 8px; }
     .form-card { padding: 16px 14px; border-radius: 16px; }
     .top-actions-bar { margin-bottom: 10px; }
-    .sample-btn, .lang-toggle-btn { padding: 5px 12px; font-size: 12px; }
+    .sample-btn, .lang-toggle-btn, .video-toggle-btn { padding: 5px 12px; font-size: 12px; }
     .brand-title { font-size: 20px; }
     .submit-btn { padding: 14px; font-size: 15.5px; }
 }
@@ -662,10 +666,22 @@ select.input-control {
                 <span id="sampleBtnText">Sample</span>
             </a>
 
+            <button type="button" class="video-toggle-btn" onclick="toggleVideoPlayer()" id="videoToggleBtn">
+                <i class="fa-solid fa-play-circle"></i>
+                <span id="videoBtnText">Video</span>
+            </button>
+
             <button type="button" class="lang-toggle-btn" onclick="toggleLanguage()" id="langToggleBtn">
                 <i class="fa-solid fa-language"></i>
                 <span id="langBtnText">தமிழ்</span>
             </button>
+        </div>
+
+        <!-- Collapsible Google Drive Video Container -->
+        <div class="video-collapse-box" id="videoCollapseBox">
+            <div class="video-wrapper">
+                <iframe src="https://drive.google.com/file/d/1XXbpRvvMltMy9ZETU6uNJvDzqwucu0cD/preview" allow="autoplay" allowfullscreen></iframe>
+            </div>
         </div>
 
         <!-- Header -->
@@ -748,6 +764,8 @@ select.input-control {
                     <option value="1000">Rs. 1000</option>
                     <option value="1500">Rs. 1500</option>
                     <option value="2000">Rs. 2000</option>
+                    <option value="5000">Rs. 5000</option>
+                    <option value="10000">Rs. 10000</option>
                 </select>
 
                 <!-- Dynamic Breakdown Display -->
@@ -763,7 +781,7 @@ select.input-control {
                     <i class="fa-solid fa-calculator"></i>
                     <span id="lblNumCal">No. of Calendars <span class="required-star">*</span></span>
                 </label>
-                <input type="number" id="numCalendars" class="input-control" placeholder="Select Donation first" min="0" max="15" oninput="validateCalendarInput()" required disabled>
+                <input type="number" id="numCalendars" class="input-control" placeholder="Select Donation first" min="0" max="30" oninput="validateCalendarInput()" required disabled>
                 
                 <div class="checkbox-option">
                     <input type="checkbox" id="allToSeva" onchange="toggleAllToSeva()">
@@ -860,10 +878,12 @@ const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSJtfaE9r60j__A
 let currentLang = 'en';
 let sheetStats = { totalResponses: 0, totalCalendarsBooked: 0, responderNames: [] };
 let isStatusOpen = false;
+let isVideoOpen = false;
 
 const translations = {
     en: {
         sampleBtn: "Sample",
+        videoBtn: "Video",
         langBtn: "தமிழ்",
         title: "Sourashtra Calendar 2027",
         tickerTitle: "Live Update",
@@ -905,6 +925,7 @@ const translations = {
     },
     ta: {
         sampleBtn: "மாதிரி",
+        videoBtn: "காணொளி",
         langBtn: "English",
         title: "ஸௌராஷ்ட்ர காலண்டர் 2027",
         tickerTitle: "நிலவரம்",
@@ -966,12 +987,28 @@ const donationDetails = {
         en: "<strong>Rs. 2000:</strong> Up to <strong>15</strong> calendars to you + <strong>11</strong> for Bhasa Seva",
         ta: "<strong>ரூ. 2000:</strong> உங்களுக்கு <strong>15</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>11</strong>",
         max: 15
+    },
+    "5000": {
+        en: "<strong>Rs. 5000:</strong> Up to <strong>35</strong> calendars to you + <strong>30</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 5000:</strong> உங்களுக்கு <strong>35</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>30</strong>",
+        max: 35
+    },
+    "10000": {
+        en: "<strong>Rs. 10000:</strong> Up to <strong>75</strong> calendars to you + <strong>60</strong> for Bhasa Seva",
+        ta: "<strong>ரூ. 10000:</strong> உங்களுக்கு <strong>75</strong> காலண்டர்கள் வரை + பாஷா சேவைக்கு <strong>60</strong>",
+        max: 75
     }
 };
 
 function toggleLanguage() {
     currentLang = currentLang === 'en' ? 'ta' : 'en';
     applyTranslations();
+}
+
+function toggleVideoPlayer() {
+    isVideoOpen = !isVideoOpen;
+    const box = document.getElementById('videoCollapseBox');
+    box.style.display = isVideoOpen ? 'block' : 'none';
 }
 
 function toggleStatusDropdown() {
@@ -1094,6 +1131,7 @@ function applyTranslations() {
     const t = translations[currentLang];
     
     document.getElementById('sampleBtnText').textContent = t.sampleBtn;
+    document.getElementById('videoBtnText').textContent = t.videoBtn;
     document.getElementById('langBtnText').textContent = t.langBtn;
     document.getElementById('txtTitle').textContent = t.title;
     document.getElementById('txtTickerHeading').textContent = t.tickerTitle;
