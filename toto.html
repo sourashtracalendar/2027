@@ -29,10 +29,9 @@
   .row{display:flex;gap:10px;align-items:flex-end}
   .row>*{flex:1}
   .chk{display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0 0}
-  button{font:inherit;font-weight:700;padding:11px 16px;border-radius:8px;border:0;cursor:pointer;background:var(--accent);color:#fff}
-  button.sec{background:#7a1fa2}
-  button.app-btn{background:#1a73e8;margin-top:6px;width:100%}
-  button:disabled{opacity:.4;cursor:not-allowed}
+  button, .btn-link{font:inherit;font-weight:700;padding:11px 16px;border-radius:8px;border:0;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;display:block;text-align:center}
+  button.sec, .btn-link.sec{background:#7a1fa2}
+  button:disabled, .btn-link[aria-disabled="true"]{opacity:.4;cursor:not-allowed;pointer-events:none}
   .req{color:var(--bad)}
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
@@ -40,7 +39,6 @@
   dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:360px;text-align:center;width:90%}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   #qr{display:flex;justify-content:center;margin:12px 0;background:#fff;padding:10px;border-radius:8px}
-  .app-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 </style>
 </head>
 <body>
@@ -89,40 +87,28 @@
     <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
     <div class="msg" id="namesMsg"></div>
 
-    <button type="button" class="sec" id="payBtn" disabled style="margin-top:10px;width:100%">Pay Now / Choose App</button>
+    <!-- Native Link Button to trigger Android App Chooser -->
+    <a id="payLink" class="btn-link sec" aria-disabled="true" style="margin-top:10px;width:100%">Choose UPI / Payment App</a>
 
     <label for="date">Transferred Date <span class="req">*</span></label>
     <input type="date" id="date" required>
     <label class="chk"><input type="checkbox" id="today"> Use today's date</label>
 
-    <label for="tmobile">PayNow / PayLah Number (if different) – optional</label>
+    <label for="tmobile">Payee / Mobile Number (if different) – optional</label>
     <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in Payment App">
     <div class="msg" id="tmMsg"></div>
 
-    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the PayNow/PayLah Number is optional.</div>
+    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the Mobile Number is optional.</div>
     <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:8px">Submit</button>
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
 </div>
 
 <dialog id="payDlg">
-  <h3 style="margin:0 0 4px">Pay with PayNow / PayLah</h3>
+  <h3 style="margin:0 0 4px">Scan QR Code</h3>
   <div class="muted" id="payInfo"></div>
   <div id="qr"></div>
-  <div class="muted" id="payHelp">Scan with PayLah, DBS, OCBC, UOB or any PayNow/UPI app to pay <b id="payTo"></b>.</div>
-  
-  <div id="mobBox" style="display:none;margin-top:10px">
-    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      <button type="button" id="copyNo" class="sec">Copy Number</button>
-      <button type="button" id="copyAmt" class="sec">Copy Amount</button>
-    </div>
-    
-    <div class="app-list">
-      <button type="button" class="app-btn" id="openPayLah">Open PayLah!</button>
-      <button type="button" class="app-btn" id="openPayNow">Open PayNow / Preferred App</button>
-    </div>
-    <div class="muted" id="mobMsg" style="margin-top:8px"></div>
-  </div>
+  <div class="muted" id="payHelp">Scan with any banking or UPI app to pay <b id="payTo"></b>.</div>
   <p><button type="button" id="closeDlg" style="background:var(--muted)">Close</button></p>
 </dialog>
 
@@ -142,7 +128,6 @@ const CFG = {
     batch:    "" 
   },
   PAYNOW: { name: "Organiser", editable: false },
-  PAYLAH_LINK: "",
   REFRESH_MS: 30000
 };
 
@@ -244,10 +229,53 @@ function recalc(){
   const p=Math.max(0,parseInt($("persons").value)||0);
   const total=current?p*current.amt:0;
   $("amount").value=fmt(total).replace(/,/g,"");
+  updatePaymentLink();
   check();
 }
 
 function nameList(){return $("namesIn").value.split(",").map(s=>s.trim()).filter(Boolean);}
+
+function updatePaymentLink(){
+  const amt=parseFloat($("amount").value)||0;
+  const payLink = $("payLink");
+  
+  if(!current || !current.pay || amt <= 0){
+    payLink.setAttribute("aria-disabled", "true");
+    payLink.removeAttribute("href");
+    return;
+  }
+
+  const id = current.pay;
+  const ref = current.code || current.no;
+  const isMobileDevice = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && innerWidth < 900);
+
+  payLink.removeAttribute("aria-disabled");
+
+  if(isMobileDevice){
+    // Standard UPI intent URI scheme triggers Android's native app chooser dialog (GPay, Paytm, Amazon, etc.)
+    const upiUri = `upi://pay?pa=${encodeURIComponent(id)}&pn=${encodeURIComponent(CFG.PAYNOW.name)}&am=${amt.toFixed(2)}&cu=SGD&tn=${encodeURIComponent(ref)}`;
+    payLink.href = upiUri;
+    payLink.onclick = null;
+  } else {
+    // Desktop fallback: Show QR dialog
+    payLink.href = "#";
+    payLink.onclick = (e) => {
+      e.preventDefault();
+      $("payInfo").textContent = `S$ ${fmt(amt)} · Ref: ${ref}`;
+      $("payTo").textContent = /^\d{8}$/.test(id) ? "+65 " + id : id;
+      $("qr").innerHTML = "";
+      
+      // Simple QR generator fallback for desktop
+      new QRCode($("qr"), {
+        text: `upi://pay?pa=${encodeURIComponent(id)}&pn=${encodeURIComponent(CFG.PAYNOW.name)}&am=${amt.toFixed(2)}&cu=SGD&tn=${encodeURIComponent(ref)}`,
+        width: 220,
+        height: 220,
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      $("payDlg").showModal();
+    };
+  }
+}
 
 function check(){
   const waOK=validMobile(normMobile($("wa").value));
@@ -266,7 +294,6 @@ function check(){
   else nm.textContent="";
 
   const base=!!current&&p>=1;
-  $("payBtn").disabled=!base;
   $("submitBtn").disabled=!(base&&waOK&&tmOK&&n>0&&$("date").value);
 }
 
@@ -282,88 +309,6 @@ $("today").addEventListener("change",e=>{
   if(e.target.checked)$("date").value=todayStr();
   check();
 });
-
-/* ============ PayNow QR (SGQR / EMVCo Payload) ============ */
-function tlv(id,val){return id+String(val.length).padStart(2,"0")+val;}
-function crc16(s){
-  let c=0xFFFF;
-  for(let i=0;i<s.length;i++){
-    c^=s.charCodeAt(i)<<8;
-    for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF;
-  }
-  return c.toString(16).toUpperCase().padStart(4,"0");
-}
-
-function paynowPayload(amount,ref,id){
-  const P=CFG.PAYNOW;
-  const isMobile=/^(\+?65)?\d{8}$/.test(id);
-  if(isMobile)id=id.replace(/^\+?65(?=\d{8}$)/,"");
-  const proxy=isMobile?"+65"+id:id;
-  const acct=tlv("00","SG.PAYNOW")+tlv("01",isMobile?"0":"2")+tlv("02",proxy)+tlv("03",P.editable?"1":"0");
-  let s=tlv("00","01")+tlv("01","12")+tlv("26",acct)+tlv("52","0000")+tlv("53","702")
-       +tlv("54",amount.toFixed(2))+tlv("58","SG")+tlv("59",P.name.slice(0,25))+tlv("60","Singapore")
-       +tlv("62",tlv("01",ref.slice(0,25)))+"6304";
-  return s+crc16(s);
-}
-
-$("payBtn").addEventListener("click",()=>{
-  const amt=parseFloat($("amount").value)||0;
-  if(!amt)return;
-
-  const id=current.pay;
-  if(!id){alert("Payment is not set up for this batch. Please contact the organiser.");return;}
-  
-  const ref=current.code||current.no;
-  const payNo=/^\d{8}$/.test(id)?id:id;
-
-  $("payInfo").textContent=`S$ ${fmt(amt)} · Ref: ${ref}`;
-  $("payTo").textContent=/^\d{8}$/.test(id)?"+65 "+id:id;
-  $("qr").innerHTML="";
-
-  const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&innerWidth<900);
-  
-  // Dynamic PayNow Payload with amount and payee details
-  const payload = paynowPayload(amt, ref, id);
-
-  if(isMobileDevice){
-    $("qr").style.display="none";
-    $("payHelp").innerHTML=`Pay <b>S$ ${fmt(amt)}</b> to <b>${esc($("payTo").textContent)}</b>.<br>Choose your preferred payment app below:`;
-    $("mobBox").style.display="block";
-    $("mobMsg").textContent="Details prepared. Select an app or copy details directly.";
-
-    $("copyNo").onclick=()=>copyText(payNo,"Number copied!");
-    $("copyAmt").onclick=()=>copyText(amt.toFixed(2),"Amount copied!");
-
-    // Handler for PayLah link
-    $("openPayLah").onclick=()=>{
-      const link=current.link||CFG.PAYLAH_LINK;
-      try{navigator.clipboard.writeText(amt.toFixed(2));}catch(e){}
-      if(link){
-        location.href=link;
-      } else {
-        location.href=`paynow://pay?mobile=${payNo}&amount=${amt.toFixed(2)}`;
-      }
-    };
-
-    // Generic PayNow Deep Link (Opens app picker on supported OS / banking apps)
-    $("openPayNow").onclick=()=>{
-      try{navigator.clipboard.writeText(payNo);}catch(e){}
-      location.href=`paynow://pay?amount=${amt.toFixed(2)}&ref=${encodeURIComponent(ref)}`;
-    };
-
-  }else{
-    $("qr").style.display="flex";
-    $("mobBox").style.display="none";
-    new QRCode($("qr"),{text:payload,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
-  }
-
-  $("payDlg").showModal();
-});
-
-async function copyText(t,msg){
-  try{await navigator.clipboard.writeText(t);$("mobMsg").textContent=msg;}
-  catch(e){$("mobMsg").textContent="Copy failed – "+t;}
-}
 
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
