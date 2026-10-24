@@ -19,9 +19,6 @@
   ul.names li{padding:6px 2px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
   .nv{color:var(--bad);font-size:13px;font-weight:600}
   .muted{color:var(--muted);font-size:13px}
-  table{width:100%;border-collapse:collapse}
-  th,td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line);font-size:15px}
-  th{color:var(--muted);font-weight:600;font-size:13px}
   label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
   input[type=text],input[type=tel],input[type=number],input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
   input:focus{outline:2px solid var(--accent);outline-offset:0}
@@ -51,15 +48,6 @@
     <div class="muted" id="feedStatus">Loading…</div>
   </div>
 
-  <!-- MIDDLE: active batches -->
-  <div class="card">
-    <h2>Active Batches</h2>
-    <table>
-      <thead><tr><th>Batch No</th><th>Amount / Person</th></tr></thead>
-      <tbody id="batches"><tr><td colspan="2" class="muted">Loading…</td></tr></tbody>
-    </table>
-  </div>
-
   <!-- INPUT & PAYMENT -->
   <form class="card" id="form" autocomplete="off" novalidate>
     <h2>Payment &amp; Submission</h2>
@@ -68,7 +56,7 @@
     <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
     <div class="msg" id="batchMsg"></div>
 
-    <label for="wa">WhatsApp Number (unique ID) <span class="req">*</span></label>
+    <label for="wa">WhatsApp Number <span class="req">*</span></label>
     <input type="tel" id="wa" inputmode="numeric" placeholder="8-digit mobile" required>
     <div class="msg" id="waMsg"></div>
 
@@ -83,7 +71,7 @@
       </div>
     </div>
 
-    <label for="namesIn">Name(s) – single or comma separated <span class="req">*</span></label>
+    <label for="namesIn">Name(s) <span class="req">*</span></label>
     <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
     <div class="msg" id="namesMsg"></div>
 
@@ -94,11 +82,11 @@
     <input type="date" id="date" required>
     <label class="chk"><input type="checkbox" id="today"> Use today's date</label>
 
-    <label for="tmobile">Payee / Mobile Number (if different) – optional</label>
+    <label for="tmobile">PayNow Number (if different) – optional</label>
     <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in Payment App">
     <div class="msg" id="tmMsg"></div>
 
-    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the Mobile Number is optional.</div>
+    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the PayNow Number is optional.</div>
     <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:8px">Submit</button>
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
@@ -186,7 +174,7 @@ async function loadFeed(){
   }catch(e){ $("feedStatus").textContent="Could not load live feed."; }
 }
 
-/* ============ MIDDLE: active batches ============ */
+/* ============ MIDDLE: active batches (Loaded in background for validation) ============ */
 let batches=[];
 async function loadBatches(){
   try{
@@ -199,11 +187,8 @@ async function loadBatches(){
       link:(r["paylah link"]||r["paylay link"]||r["payment link"]||"").trim(),
       status:pick(r,"status")
     })).filter(b=>(b.code||b.no) && b.status.toLowerCase()==="active");
-    $("batches").innerHTML=batches.length
-      ? batches.map(b=>`<tr><td>${esc(b.no||b.code)}</td><td>S$ ${fmt(b.amt)}</td></tr>`).join("")
-      : '<tr><td colspan="2" class="muted">No active batches</td></tr>';
     validateBatch();
-  }catch(e){ $("batches").innerHTML='<tr><td colspan="2" class="bad">Could not load batches.</td></tr>'; }
+  }catch(e){}
 }
 
 /* ============ INPUT & PAYMENT ============ */
@@ -252,12 +237,10 @@ function updatePaymentLink(){
   payLink.removeAttribute("aria-disabled");
 
   if(isMobileDevice){
-    // Standard UPI intent URI scheme triggers Android's native app chooser dialog (GPay, Paytm, Amazon, etc.)
     const upiUri = `upi://pay?pa=${encodeURIComponent(id)}&pn=${encodeURIComponent(CFG.PAYNOW.name)}&am=${amt.toFixed(2)}&cu=SGD&tn=${encodeURIComponent(ref)}`;
     payLink.href = upiUri;
     payLink.onclick = null;
   } else {
-    // Desktop fallback: Show QR dialog
     payLink.href = "#";
     payLink.onclick = (e) => {
       e.preventDefault();
@@ -265,7 +248,6 @@ function updatePaymentLink(){
       $("payTo").textContent = /^\d{8}$/.test(id) ? "+65 " + id : id;
       $("qr").innerHTML = "";
       
-      // Simple QR generator fallback for desktop
       new QRCode($("qr"), {
         text: `upi://pay?pa=${encodeURIComponent(id)}&pn=${encodeURIComponent(CFG.PAYNOW.name)}&am=${amt.toFixed(2)}&cu=SGD&tn=${encodeURIComponent(ref)}`,
         width: 220,
