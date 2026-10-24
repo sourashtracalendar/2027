@@ -31,19 +31,20 @@
   .chk{display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0 0}
   button{font:inherit;font-weight:700;padding:11px 16px;border-radius:8px;border:0;cursor:pointer;background:var(--accent);color:#fff}
   button.sec{background:#7a1fa2}
+  button.app-btn{background:#1a73e8;margin-top:6px;width:100%}
   button:disabled{opacity:.4;cursor:not-allowed}
   .req{color:var(--bad)}
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
   .submit{width:100%;margin-top:16px;font-size:17px}
-  dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:340px;text-align:center}
+  dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:360px;text-align:center;width:90%}
   dialog::backdrop{background:rgba(0,0,0,.5)}
   #qr{display:flex;justify-content:center;margin:12px 0;background:#fff;padding:10px;border-radius:8px}
+  .app-list{display:flex;flex-direction:column;gap:6px;margin-top:10px}
 </style>
 </head>
 <body>
 <div class="wrap">
-
   <!-- TOP: live update -->
   <div class="card">
     <h2>Live Update</h2>
@@ -84,37 +85,42 @@
       </div>
     </div>
 
-    <label for="names">Name(s) – single or comma separated <span class="req">*</span></label>
+    <label for="namesIn">Name(s) – single or comma separated <span class="req">*</span></label>
     <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
     <div class="msg" id="namesMsg"></div>
 
-    <button type="button" class="sec" id="payBtn" disabled style="margin-top:10px;width:100%">Pay with Paylah</button>
+    <button type="button" class="sec" id="payBtn" disabled style="margin-top:10px;width:100%">Pay Now / Choose App</button>
 
     <label for="date">Transferred Date <span class="req">*</span></label>
     <input type="date" id="date" required>
     <label class="chk"><input type="checkbox" id="today"> Use today's date</label>
 
-    <label for="tmobile">Paylah Number (if different) – optional</label>
-    <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in PayLah">
+    <label for="tmobile">PayNow / PayLah Number (if different) – optional</label>
+    <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in Payment App">
     <div class="msg" id="tmMsg"></div>
 
-    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the Paylah Number is optional.</div>
+    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the PayNow/PayLah Number is optional.</div>
     <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:8px">Submit</button>
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
 </div>
 
 <dialog id="payDlg">
-  <h3 style="margin:0 0 4px">Pay with Paylah</h3>
+  <h3 style="margin:0 0 4px">Pay with PayNow / PayLah</h3>
   <div class="muted" id="payInfo"></div>
   <div id="qr"></div>
-  <div class="muted" id="payHelp">Scan with PayLah or any banking app, or pay to <b id="payTo"></b>.<br>Then come back and submit the form.</div>
+  <div class="muted" id="payHelp">Scan with PayLah, DBS, OCBC, UOB or any PayNow/UPI app to pay <b id="payTo"></b>.</div>
+  
   <div id="mobBox" style="display:none;margin-top:10px">
     <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      <button type="button" id="copyNo" class="sec">Copy number</button>
-      <button type="button" id="copyAmt" class="sec">Copy amount</button>
+      <button type="button" id="copyNo" class="sec">Copy Number</button>
+      <button type="button" id="copyAmt" class="sec">Copy Amount</button>
     </div>
-    <button type="button" id="openApp" style="width:100%;margin-top:10px;display:none">Open PayLah app</button>
+    
+    <div class="app-list">
+      <button type="button" class="app-btn" id="openPayLah">Open PayLah!</button>
+      <button type="button" class="app-btn" id="openPayNow">Open PayNow / Preferred App</button>
+    </div>
     <div class="muted" id="mobMsg" style="margin-top:8px"></div>
   </div>
   <p><button type="button" id="closeDlg" style="background:var(--muted)">Close</button></p>
@@ -126,7 +132,6 @@ const CFG = {
   MASTER_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFYhi9sHl2xHL7VBZTUxCUTPr8v2WzrkkVlqq_oDXXsFAm1Awx7TexXbqt3eiOZtyGvA6dpC05V8mx/pub?gid=0&single=true&output=csv",
   PUBLICFEED_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFYhi9sHl2xHL7VBZTUxCUTPr8v2WzrkkVlqq_oDXXsFAm1Awx7TexXbqt3eiOZtyGvA6dpC05V8mx/pub?gid=163284184&single=true&output=csv",
   FORM_POST_URL: "https://docs.google.com/forms/d/e/1FAIpQLSc2-6Mz4nCjfnb6xdwMugtNed1cEj_2C-BIixr0WVfD1lo-0A/formResponse",
-  // Google Form entry IDs (taken from your prefilled link)
   ENTRY: {
     whatsapp: "entry.910713439",
     persons:  "entry.2113506963",
@@ -134,13 +139,9 @@ const CFG = {
     amount:   "entry.2048096547",
     date:     "entry.1190347781",
     tmobile:  "entry.1097018115",
-    batch:    ""   // <-- add a "Batch No" question to the Google Form and paste its entry.xxxx here
+    batch:    "" 
   },
-  // PayNow receiver: type "mobile" (8-digit SG number) or "uen"
-  // PayNow ID itself is read per batch from the "Paylay id" column of the MASTER sheet
   PAYNOW: { name: "Organiser", editable: false },
-  // PayLah payment link (create in the PayLah app: My QR > Payment Link). Used on phones.
-  // Can also be set per batch with a "PayLah Link" column in the MASTER sheet (that wins).
   PAYLAH_LINK: "",
   REFRESH_MS: 30000
 };
@@ -165,17 +166,19 @@ function parseCSV(text){
   const head=rows[0].map(h=>h.trim().toLowerCase());
   return rows.slice(1).map(r=>{const o={};head.forEach((h,i)=>o[h]=(r[i]??"").trim());return o;});
 }
-// find a value by trying several possible header names / fragments
+
 function pick(o,...keys){
   for(const k of keys){ if(o[k]!==undefined) return o[k]; }
   for(const k of keys){ const f=Object.keys(o).find(h=>h.includes(k)); if(f) return o[f]; }
   return "";
 }
+
 async function getCSV(url){
   const r=await fetch(url+"&t="+Date.now(),{cache:"no-store"});
   if(!r.ok) throw new Error(r.status);
   return parseCSV(await r.text());
 }
+
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
 /* ============ TOP: live feed ============ */
@@ -236,12 +239,14 @@ function validateBatch(){
   else{m.textContent="Batch code not found or not active";m.className="msg bad";}
   recalc();
 }
+
 function recalc(){
   const p=Math.max(0,parseInt($("persons").value)||0);
   const total=current?p*current.amt:0;
   $("amount").value=fmt(total).replace(/,/g,"");
   check();
 }
+
 function nameList(){return $("namesIn").value.split(",").map(s=>s.trim()).filter(Boolean);}
 
 function check(){
@@ -267,6 +272,7 @@ function check(){
 
 $("batch").addEventListener("input",validateBatch);
 ["wa","persons","namesIn","tmobile","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
+
 function todayStr(){
   const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Singapore"}));
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -277,9 +283,17 @@ $("today").addEventListener("change",e=>{
   check();
 });
 
-/* ============ PayNow QR (SGQR / EMVCo) ============ */
+/* ============ PayNow QR (SGQR / EMVCo Payload) ============ */
 function tlv(id,val){return id+String(val.length).padStart(2,"0")+val;}
-function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF;}return c.toString(16).toUpperCase().padStart(4,"0");}
+function crc16(s){
+  let c=0xFFFF;
+  for(let i=0;i<s.length;i++){
+    c^=s.charCodeAt(i)<<8;
+    for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF;
+  }
+  return c.toString(16).toUpperCase().padStart(4,"0");
+}
+
 function paynowPayload(amount,ref,id){
   const P=CFG.PAYNOW;
   const isMobile=/^(\+?65)?\d{8}$/.test(id);
@@ -291,66 +305,89 @@ function paynowPayload(amount,ref,id){
        +tlv("62",tlv("01",ref.slice(0,25)))+"6304";
   return s+crc16(s);
 }
+
 $("payBtn").addEventListener("click",()=>{
   const amt=parseFloat($("amount").value)||0;
   if(!amt)return;
-  // Preferred: open the PayLah payment link straight away (opens the app on a phone with PayLah installed)
-  const link=current.link||CFG.PAYLAH_LINK;
-  const onPhone=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&innerWidth<900);
-  if(link&&onPhone){
-    try{navigator.clipboard.writeText(amt.toFixed(2));}catch(e){}   // amount ready to paste if the link is open-amount
-    $("result").textContent=`Opening PayLah… pay S$ ${fmt(amt)}, then come back and Submit.`;$("result").className="msg ok";
-    location.href=link;
-    return;
-  }
+
   const id=current.pay;
   if(!id){alert("Payment is not set up for this batch. Please contact the organiser.");return;}
+  
   const ref=current.code||current.no;
+  const payNo=/^\d{8}$/.test(id)?id:id;
+
   $("payInfo").textContent=`S$ ${fmt(amt)} · Ref: ${ref}`;
   $("payTo").textContent=/^\d{8}$/.test(id)?"+65 "+id:id;
   $("qr").innerHTML="";
+
   const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&innerWidth<900);
-  const payNo=/^\d{8}$/.test(id)?id:id;
+  
+  // Dynamic PayNow Payload with amount and payee details
+  const payload = paynowPayload(amt, ref, id);
+
   if(isMobileDevice){
-    // a phone can't scan its own screen, so skip the QR and offer copy + open-app instead
     $("qr").style.display="none";
-    $("payHelp").innerHTML=`Pay <b>S$ ${fmt(amt)}</b> to <b>${esc($("payTo").textContent)}</b> in PayLah, then come back and submit the form.`;
+    $("payHelp").innerHTML=`Pay <b>S$ ${fmt(amt)}</b> to <b>${esc($("payTo").textContent)}</b>.<br>Choose your preferred payment app below:`;
     $("mobBox").style.display="block";
-    $("openApp").style.display="none";
-    $("mobMsg").textContent="Open PayLah → Pay/Transfer → PayNow, then paste the number and amount.";
-    $("copyNo").onclick=()=>copyText(payNo,"Number copied");
-    $("copyAmt").onclick=()=>copyText(amt.toFixed(2),"Amount copied");
+    $("mobMsg").textContent="Details prepared. Select an app or copy details directly.";
+
+    $("copyNo").onclick=()=>copyText(payNo,"Number copied!");
+    $("copyAmt").onclick=()=>copyText(amt.toFixed(2),"Amount copied!");
+
+    // Handler for PayLah link
+    $("openPayLah").onclick=()=>{
+      const link=current.link||CFG.PAYLAH_LINK;
+      try{navigator.clipboard.writeText(amt.toFixed(2));}catch(e){}
+      if(link){
+        location.href=link;
+      } else {
+        location.href=`paynow://pay?mobile=${payNo}&amount=${amt.toFixed(2)}`;
+      }
+    };
+
+    // Generic PayNow Deep Link (Opens app picker on supported OS / banking apps)
+    $("openPayNow").onclick=()=>{
+      try{navigator.clipboard.writeText(payNo);}catch(e){}
+      location.href=`paynow://pay?amount=${amt.toFixed(2)}&ref=${encodeURIComponent(ref)}`;
+    };
+
   }else{
     $("qr").style.display="flex";
     $("mobBox").style.display="none";
-    new QRCode($("qr"),{text:paynowPayload(amt,ref,id),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+    new QRCode($("qr"),{text:payload,width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
   }
+
   $("payDlg").showModal();
 });
+
 async function copyText(t,msg){
   try{await navigator.clipboard.writeText(t);$("mobMsg").textContent=msg;}
   catch(e){$("mobMsg").textContent="Copy failed – "+t;}
 }
+
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
 /* ============ Submit to Google Form ============ */
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();
   if($("submitBtn").disabled)return;
+
   const E=CFG.ENTRY, wa=normMobile($("wa").value), tm=normMobile($("tmobile").value);
   const dt=$("date").value, [y,m,d]=dt.split("-");
   const body=new URLSearchParams();
+
   body.set(E.whatsapp,wa);
   body.set(E.persons,String(parseInt($("persons").value)));
   body.set(E.names,nameList().join(", "));
   body.set(E.amount,$("amount").value);
-  // Google Forms date questions are submitted as _year/_month/_day (no plain value)
   body.set(E.date+"_year",y);body.set(E.date+"_month",String(+m));body.set(E.date+"_day",String(+d));
   body.set("fvv","1");body.set("pageHistory","0");
   body.set(E.tmobile,tm||wa);
   if(E.batch)body.set(E.batch,current.code);
+
   const btn=$("submitBtn"),res=$("result");
   btn.disabled=true;btn.textContent="Submitting…";
+
   try{
     await fetch(CFG.FORM_POST_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
     res.textContent="✓ Submitted. Thank you! Your entry will show once verified.";res.className="msg ok";
@@ -364,7 +401,8 @@ $("form").addEventListener("submit",async e=>{
 });
 
 /* ============ init ============ */
-loadFeed();loadBatches();
+loadFeed();
+loadBatches();
 setInterval(loadFeed,CFG.REFRESH_MS);
 setInterval(loadBatches,CFG.REFRESH_MS*4);
 </script>
