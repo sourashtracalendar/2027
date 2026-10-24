@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Contribution Form</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{--bg:#f5f6f8;--card:#fff;--ink:#1c2330;--muted:#6b7380;--line:#dde1e8;--accent:#c8102e;--ok:#14804a;--warn:#b26a00;--bad:#c0262d}
+  @media (prefers-color-scheme:dark){:root{--bg:#12151b;--card:#1b2029;--ink:#e8ebf0;--muted:#98a1ae;--line:#2c333f;--accent:#ff4d63;--ok:#43c283;--warn:#f0a030;--bad:#ff6b72}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+  .wrap{max-width:560px;margin:0 auto;padding:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+  .total{font-size:24px;font-weight:700}
+  .total .unv{color:var(--warn);font-weight:600;font-size:18px}
+  ul.names{list-style:none;margin:10px 0 0;padding:0;max-height:200px;overflow:auto;border-top:1px solid var(--line)}
+  ul.names li{padding:6px 2px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+  .nv{color:var(--bad);font-size:13px;font-weight:600}
+  .muted{color:var(--muted);font-size:13px}
+  table{width:100%;border-collapse:collapse}
+  th,td{text-align:left;padding:7px 4px;border-bottom:1px solid var(--line);font-size:15px}
+  th{color:var(--muted);font-weight:600;font-size:13px}
+  label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
+  input[type=text],input[type=tel],input[type=number],input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
+  input:focus{outline:2px solid var(--accent);outline-offset:0}
+  input[readonly]{opacity:.8}
+  .row{display:flex;gap:10px;align-items:flex-end}
+  .row>*{flex:1}
+  .chk{display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0 0}
+  button{font:inherit;font-weight:700;padding:11px 16px;border-radius:8px;border:0;cursor:pointer;background:var(--accent);color:#fff}
+  button.sec{background:#7a1fa2}
+  button:disabled{opacity:.4;cursor:not-allowed}
+  .req{color:var(--bad)}
+  .msg{font-size:13px;margin-top:4px;min-height:18px}
+  .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+  .submit{width:100%;margin-top:16px;font-size:17px}
+  dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:340px;text-align:center}
+  dialog::backdrop{background:rgba(0,0,0,.5)}
+  #qr{display:flex;justify-content:center;margin:12px 0;background:#fff;padding:10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP: live update -->
+  <div class="card">
+    <h2>Live Update</h2>
+    <div class="total" id="total">Total S$ –</div>
+    <ul class="names" id="names"></ul>
+    <div class="muted" id="feedStatus">Loading…</div>
+  </div>
+
+  <!-- MIDDLE: active batches -->
+  <div class="card">
+    <h2>Active Batches</h2>
+    <table>
+      <thead><tr><th>Batch No</th><th>Amount / Person</th></tr></thead>
+      <tbody id="batches"><tr><td colspan="2" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+
+  <!-- INPUT & PAYMENT -->
+  <form class="card" id="form" autocomplete="off" novalidate>
+    <h2>Payment &amp; Submission</h2>
+
+    <label for="batch">Batch Code <span class="req">*</span></label>
+    <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
+    <div class="msg" id="batchMsg"></div>
+
+    <label for="wa">WhatsApp Number (unique ID) <span class="req">*</span></label>
+    <input type="tel" id="wa" inputmode="numeric" placeholder="8-digit mobile" required>
+    <div class="msg" id="waMsg"></div>
+
+    <div class="row">
+      <div>
+        <label for="persons">Number of Persons <span class="req">*</span></label>
+        <input type="number" id="persons" min="1" step="1" value="1" required>
+      </div>
+      <div>
+        <label for="amount">Total Amount (S$) <span class="req">*</span></label>
+        <input type="text" id="amount" readonly value="0.00">
+      </div>
+    </div>
+
+    <label for="names">Name(s) – single or comma separated <span class="req">*</span></label>
+    <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
+    <div class="msg" id="namesMsg"></div>
+
+    <button type="button" class="sec" id="payBtn" disabled style="margin-top:10px;width:100%">Pay with Paylah</button>
+
+    <label for="date">Transferred Date <span class="req">*</span></label>
+    <input type="date" id="date" required>
+    <label class="chk"><input type="checkbox" id="today"> Use today's date</label>
+
+    <label for="tmobile">Paylah Number (if different) – optional</label>
+    <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in PayLah">
+    <div class="msg" id="tmMsg"></div>
+
+    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the Paylah Number is optional.</div>
+    <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:8px">Submit</button>
+    <div class="msg" id="result" style="text-align:center"></div>
+  </form>
+</div>
+
+<dialog id="payDlg">
+  <h3 style="margin:0 0 4px">Pay with Paylah</h3>
+  <div class="muted" id="payInfo"></div>
+  <div id="qr"></div>
+  <div class="muted" id="payHelp">Scan with PayLah or any banking app, or pay to <b id="payTo"></b>.<br>Then come back and submit the form.</div>
+  <div id="mobBox" style="display:none;margin-top:10px">
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button type="button" id="copyNo" class="sec">Copy number</button>
+      <button type="button" id="copyAmt" class="sec">Copy amount</button>
+    </div>
+    <button type="button" id="openApp" style="width:100%;margin-top:10px;display:none">Open PayLah app</button>
+    <div class="muted" id="mobMsg" style="margin-top:8px"></div>
+  </div>
+  <p><button type="button" id="closeDlg" style="background:var(--muted)">Close</button></p>
+</dialog>
+
+<script>
+/* ============ CONFIG ============ */
+const CFG = {
+  MASTER_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFYhi9sHl2xHL7VBZTUxCUTPr8v2WzrkkVlqq_oDXXsFAm1Awx7TexXbqt3eiOZtyGvA6dpC05V8mx/pub?gid=0&single=true&output=csv",
+  PUBLICFEED_CSV_URL: "https://docs.google.com/spreadsheets/d/e/2PACX-1vSFYhi9sHl2xHL7VBZTUxCUTPr8v2WzrkkVlqq_oDXXsFAm1Awx7TexXbqt3eiOZtyGvA6dpC05V8mx/pub?gid=163284184&single=true&output=csv",
+  FORM_POST_URL: "https://docs.google.com/forms/d/e/1FAIpQLSc2-6Mz4nCjfnb6xdwMugtNed1cEj_2C-BIixr0WVfD1lo-0A/formResponse",
+  // Google Form entry IDs (taken from your prefilled link)
+  ENTRY: {
+    whatsapp: "entry.910713439",
+    persons:  "entry.2113506963",
+    names:    "entry.823235837",
+    amount:   "entry.2048096547",
+    date:     "entry.1190347781",
+    tmobile:  "entry.1097018115",
+    batch:    ""   // <-- add a "Batch No" question to the Google Form and paste its entry.xxxx here
+  },
+  // PayNow receiver: type "mobile" (8-digit SG number) or "uen"
+  // PayNow ID itself is read per batch from the "Paylay id" column of the MASTER sheet
+  PAYNOW: { name: "Organiser", editable: false },
+  // PayLah payment link (create in the PayLah app: My QR > Payment Link). Used on phones.
+  // Can also be set per batch with a "PayLah Link" column in the MASTER sheet (that wins).
+  PAYLAH_LINK: "",
+  REFRESH_MS: 30000
+};
+
+/* ============ helpers ============ */
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString("en-SG",{minimumFractionDigits:2,maximumFractionDigits:2});
+const num = v => { const n = parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; };
+
+function parseCSV(text){
+  const rows=[];let row=[],cur="",q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else cur+=c; }
+    else if(c=='"') q=true;
+    else if(c==","){row.push(cur);cur="";}
+    else if(c=="\n"||c=="\r"){ if(c=="\r"&&text[i+1]=="\n")i++; row.push(cur);cur=""; if(row.some(x=>x.trim()!==""))rows.push(row); row=[]; }
+    else cur+=c;
+  }
+  if(cur!==""||row.length){row.push(cur); if(row.some(x=>x.trim()!==""))rows.push(row);}
+  if(!rows.length)return[];
+  const head=rows[0].map(h=>h.trim().toLowerCase());
+  return rows.slice(1).map(r=>{const o={};head.forEach((h,i)=>o[h]=(r[i]??"").trim());return o;});
+}
+// find a value by trying several possible header names / fragments
+function pick(o,...keys){
+  for(const k of keys){ if(o[k]!==undefined) return o[k]; }
+  for(const k of keys){ const f=Object.keys(o).find(h=>h.includes(k)); if(f) return o[f]; }
+  return "";
+}
+async function getCSV(url){
+  const r=await fetch(url+"&t="+Date.now(),{cache:"no-store"});
+  if(!r.ok) throw new Error(r.status);
+  return parseCSV(await r.text());
+}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+
+/* ============ TOP: live feed ============ */
+async function loadFeed(){
+  try{
+    const rows=await getCSV(CFG.PUBLICFEED_CSV_URL);
+    let total=0, unverified=0;
+    const li=[];
+    rows.forEach(r=>{
+      const name=pick(r,"name","names");
+      const amt=num(pick(r,"total amount","amount","total"));
+      const ver=pick(r,"verified","verify","status").toUpperCase();
+      const isN = ver.startsWith("N");
+      total+=amt; if(isN) unverified+=amt;
+      if(name) li.push(`<li><span>${esc(name)}</span>${isN?'<span class="nv">(N)</span>':''}</li>`);
+    });
+    $("total").innerHTML=`Total S$ ${fmt(total)}`+(unverified>0?` <span class="unv">(${fmt(unverified)})</span>`:"");
+    $("names").innerHTML=li.join("")||'<li class="muted">No entries yet</li>';
+    $("feedStatus").textContent="Updated "+new Date().toLocaleTimeString("en-SG",{hour:"2-digit",minute:"2-digit"});
+  }catch(e){ $("feedStatus").textContent="Could not load live feed."; }
+}
+
+/* ============ MIDDLE: active batches ============ */
+let batches=[];
+async function loadBatches(){
+  try{
+    const rows=await getCSV(CFG.MASTER_CSV_URL);
+    batches=rows.map(r=>({
+      no:(r["batch no"]||"").trim(),
+      code:(r["batch code"]||"").trim(),
+      amt:num(pick(r,"amount per person","per person","amount")),
+      pay:pick(r,"paylay id","paynow id","paynow","paylah").replace(/\s/g,""),
+      link:(r["paylah link"]||r["paylay link"]||r["payment link"]||"").trim(),
+      status:pick(r,"status")
+    })).filter(b=>(b.code||b.no) && b.status.toLowerCase()==="active");
+    $("batches").innerHTML=batches.length
+      ? batches.map(b=>`<tr><td>${esc(b.no||b.code)}</td><td>S$ ${fmt(b.amt)}</td></tr>`).join("")
+      : '<tr><td colspan="2" class="muted">No active batches</td></tr>';
+    validateBatch();
+  }catch(e){ $("batches").innerHTML='<tr><td colspan="2" class="bad">Could not load batches.</td></tr>'; }
+}
+
+/* ============ INPUT & PAYMENT ============ */
+let current=null;
+function normMobile(v){
+  let d=String(v).replace(/\D/g,"");
+  if(d.length===10&&d.startsWith("65"))d=d.slice(2);
+  return d;
+}
+const validMobile=d=>/^[3689]\d{7}$/.test(d);
+
+function validateBatch(){
+  const v=$("batch").value.trim().toLowerCase();
+  current=v?batches.find(b=>b.code.toLowerCase()===v||b.no.toLowerCase()===v)||null:null;
+  const m=$("batchMsg");
+  if(!v){m.textContent="";m.className="msg";}
+  else if(current){m.textContent=`✓ Valid – S$ ${fmt(current.amt)} per person`;m.className="msg ok";}
+  else{m.textContent="Batch code not found or not active";m.className="msg bad";}
+  recalc();
+}
+function recalc(){
+  const p=Math.max(0,parseInt($("persons").value)||0);
+  const total=current?p*current.amt:0;
+  $("amount").value=fmt(total).replace(/,/g,"");
+  check();
+}
+function nameList(){return $("namesIn").value.split(",").map(s=>s.trim()).filter(Boolean);}
+
+function check(){
+  const waOK=validMobile(normMobile($("wa").value));
+  $("waMsg").textContent=$("wa").value&&!waOK?"Enter a valid 8-digit Singapore number":"";
+  $("waMsg").className="msg bad";
+
+  const tm=$("tmobile").value.trim();
+  const tmOK=!tm||validMobile(normMobile(tm));
+  $("tmMsg").textContent=!tmOK?"Enter a valid 8-digit Singapore number":"";
+  $("tmMsg").className="msg bad";
+
+  const p=parseInt($("persons").value)||0;
+  const n=nameList().length;
+  const nm=$("namesMsg");
+  if(n&&p&&n!==p){nm.textContent=`${n} name(s) entered for ${p} person(s)`;nm.className="msg warn";}
+  else nm.textContent="";
+
+  const base=!!current&&p>=1;
+  $("payBtn").disabled=!base;
+  $("submitBtn").disabled=!(base&&waOK&&tmOK&&n>0&&$("date").value);
+}
+
+$("batch").addEventListener("input",validateBatch);
+["wa","persons","namesIn","tmobile","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
+function todayStr(){
+  const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Singapore"}));
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+$("today").addEventListener("change",e=>{
+  $("date").readOnly=e.target.checked;
+  if(e.target.checked)$("date").value=todayStr();
+  check();
+});
+
+/* ============ PayNow QR (SGQR / EMVCo) ============ */
+function tlv(id,val){return id+String(val.length).padStart(2,"0")+val;}
+function crc16(s){let c=0xFFFF;for(let i=0;i<s.length;i++){c^=s.charCodeAt(i)<<8;for(let j=0;j<8;j++)c=(c&0x8000)?((c<<1)^0x1021)&0xFFFF:(c<<1)&0xFFFF;}return c.toString(16).toUpperCase().padStart(4,"0");}
+function paynowPayload(amount,ref,id){
+  const P=CFG.PAYNOW;
+  const isMobile=/^(\+?65)?\d{8}$/.test(id);
+  if(isMobile)id=id.replace(/^\+?65(?=\d{8}$)/,"");
+  const proxy=isMobile?"+65"+id:id;
+  const acct=tlv("00","SG.PAYNOW")+tlv("01",isMobile?"0":"2")+tlv("02",proxy)+tlv("03",P.editable?"1":"0");
+  let s=tlv("00","01")+tlv("01","12")+tlv("26",acct)+tlv("52","0000")+tlv("53","702")
+       +tlv("54",amount.toFixed(2))+tlv("58","SG")+tlv("59",P.name.slice(0,25))+tlv("60","Singapore")
+       +tlv("62",tlv("01",ref.slice(0,25)))+"6304";
+  return s+crc16(s);
+}
+$("payBtn").addEventListener("click",()=>{
+  const amt=parseFloat($("amount").value)||0;
+  if(!amt)return;
+  // Preferred: open the PayLah payment link straight away (opens the app on a phone with PayLah installed)
+  const link=current.link||CFG.PAYLAH_LINK;
+  const onPhone=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&innerWidth<900);
+  if(link&&onPhone){
+    try{navigator.clipboard.writeText(amt.toFixed(2));}catch(e){}   // amount ready to paste if the link is open-amount
+    $("result").textContent=`Opening PayLah… pay S$ ${fmt(amt)}, then come back and Submit.`;$("result").className="msg ok";
+    location.href=link;
+    return;
+  }
+  const id=current.pay;
+  if(!id){alert("Payment is not set up for this batch. Please contact the organiser.");return;}
+  const ref=current.code||current.no;
+  $("payInfo").textContent=`S$ ${fmt(amt)} · Ref: ${ref}`;
+  $("payTo").textContent=/^\d{8}$/.test(id)?"+65 "+id:id;
+  $("qr").innerHTML="";
+  const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&innerWidth<900);
+  const payNo=/^\d{8}$/.test(id)?id:id;
+  if(isMobileDevice){
+    // a phone can't scan its own screen, so skip the QR and offer copy + open-app instead
+    $("qr").style.display="none";
+    $("payHelp").innerHTML=`Pay <b>S$ ${fmt(amt)}</b> to <b>${esc($("payTo").textContent)}</b> in PayLah, then come back and submit the form.`;
+    $("mobBox").style.display="block";
+    $("openApp").style.display="none";
+    $("mobMsg").textContent="Open PayLah → Pay/Transfer → PayNow, then paste the number and amount.";
+    $("copyNo").onclick=()=>copyText(payNo,"Number copied");
+    $("copyAmt").onclick=()=>copyText(amt.toFixed(2),"Amount copied");
+  }else{
+    $("qr").style.display="flex";
+    $("mobBox").style.display="none";
+    new QRCode($("qr"),{text:paynowPayload(amt,ref,id),width:220,height:220,correctLevel:QRCode.CorrectLevel.M});
+  }
+  $("payDlg").showModal();
+});
+async function copyText(t,msg){
+  try{await navigator.clipboard.writeText(t);$("mobMsg").textContent=msg;}
+  catch(e){$("mobMsg").textContent="Copy failed – "+t;}
+}
+$("closeDlg").addEventListener("click",()=>$("payDlg").close());
+
+/* ============ Submit to Google Form ============ */
+$("form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  if($("submitBtn").disabled)return;
+  const E=CFG.ENTRY, wa=normMobile($("wa").value), tm=normMobile($("tmobile").value);
+  const dt=$("date").value, [y,m,d]=dt.split("-");
+  const body=new URLSearchParams();
+  body.set(E.whatsapp,wa);
+  body.set(E.persons,String(parseInt($("persons").value)));
+  body.set(E.names,nameList().join(", "));
+  body.set(E.amount,$("amount").value);
+  // Google Forms date questions are submitted as _year/_month/_day (no plain value)
+  body.set(E.date+"_year",y);body.set(E.date+"_month",String(+m));body.set(E.date+"_day",String(+d));
+  body.set("fvv","1");body.set("pageHistory","0");
+  body.set(E.tmobile,tm||wa);
+  if(E.batch)body.set(E.batch,current.code);
+  const btn=$("submitBtn"),res=$("result");
+  btn.disabled=true;btn.textContent="Submitting…";
+  try{
+    await fetch(CFG.FORM_POST_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
+    res.textContent="✓ Submitted. Thank you! Your entry will show once verified.";res.className="msg ok";
+    $("form").reset();current=null;$("date").readOnly=false;$("batchMsg").textContent="";recalc();
+    setTimeout(loadFeed,4000);
+  }catch(err){
+    res.textContent="Submission failed. Please check your connection and try again.";res.className="msg bad";
+    btn.disabled=false;
+  }
+  btn.textContent="Submit";
+});
+
+/* ============ init ============ */
+loadFeed();loadBatches();
+setInterval(loadFeed,CFG.REFRESH_MS);
+setInterval(loadBatches,CFG.REFRESH_MS*4);
+</script>
+</body>
+</html>
