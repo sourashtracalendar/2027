@@ -145,7 +145,7 @@ const CFG = {
     persons:  "entry.2113506963",
     names:    "entry.823235837",
     amount:   "entry.2048096547",
-    date:     "entry.1190347781",
+    date:     "entry.11190347781",
     tmobile:  "entry.1097018115",
     batch:    "" 
   },
@@ -297,9 +297,10 @@ function updatePaymentLink(){
   const waVal = normMobile($("wa").value);
   const waOK = validMobile(waVal);
   const personsVal = parseInt($("persons").value) || 0;
+  const namesVal = nameList().length;
 
-  // Requirement 1: Enable PayLah! button ONLY after batch code, valid whatsapp number, and number of persons are entered.
-  const canPay = current && waOK && personsVal >= 0 && amt > 0;
+  // PayLah! button requires: Batch Code, Valid WhatsApp Number, Number of Persons >= 1, Total Amount > 0, and at least 1 Name entered.
+  const canPay = current && waOK && personsVal >= 1 && amt > 0 && namesVal > 0;
 
   if(!canPay){
     payLink.setAttribute("aria-disabled", "true");
@@ -308,7 +309,6 @@ function updatePaymentLink(){
   }
 
   const id = current.pay;
-  // Requirement 2: Ref should be WhatsApp number instead of batch code
   const ref = waVal;
   const cleanPhone = String(id).replace(/\D/g,"");
 
@@ -359,7 +359,7 @@ function check(){
   if(n&&p&&n!==p){nm.textContent=`${n} name(s) entered for ${p} person(s)`;nm.className="msg warn";}
   else nm.textContent="";
 
-  // Update PayLah button state whenever inputs change
+  // Update PayLah button state dynamically on input changes
   updatePaymentLink();
 
   const base=!!current&&p>=1;
