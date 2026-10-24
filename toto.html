@@ -42,7 +42,7 @@
   .req{color:var(--bad)}
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-  .submit{width:100%;margin-top:16px;font-size:17px}
+  .submit{width:100%;font-size:16px;height:42px;display:flex;align-items:center;justify-content:center}
   
   dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:380px;text-align:center;width:92%}
   dialog::backdrop{background:rgba(0,0,0,.5)}
@@ -66,7 +66,7 @@
   <form class="card" id="form" autocomplete="off" novalidate>
     <h1>Jackpot Dream Group</h1>
 
-    <!-- Batch Code (Used for page validation only) -->
+    <!-- Batch Code -->
     <label for="batch" style="margin-top:0">Batch Code <span class="req">*</span></label>
     <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
     <div class="msg" id="batchMsg"></div>
@@ -104,13 +104,19 @@
       </div>
     </div>
 
-    <!-- PayLah Number (optional) -->
-    <label for="tmobile">PayLah Number (if different) – optional</label>
-    <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in PayLah!">
-    <div class="msg" id="tmMsg"></div>
+    <!-- PayLah Number & Submit Button Side-by-Side -->
+    <div class="row" style="margin-top:12px">
+      <div>
+        <label for="tmobile" style="margin-top:0">PayLah Number</label>
+        <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
+        <div class="msg" id="tmMsg"></div>
+      </div>
+      <div>
+        <label style="visibility:hidden;margin-top:0">Action</label>
+        <button type="submit" class="submit" id="submitBtn" disabled>Submit</button>
+      </div>
+    </div>
 
-    <!-- Submit Button -->
-    <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:12px">Submit</button>
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
 </div>
@@ -147,7 +153,6 @@ const CFG = {
     amount:   "entry.2048096547",
     date:     "entry.1190347781",
     tmobile:  "entry.1097018115"
-    // batch is completely excluded from form submission
   },
   PAYNOW: { name: "Organiser", editable: false },
   REFRESH_MS: 30000
@@ -255,6 +260,8 @@ async function loadBatches(){
 
 /* ============ INPUT & PAYMENT ============ */
 let current=null;
+let manualTmobile = false;
+
 function normMobile(v){
   let d=String(v).replace(/\D/g,"");
   if(d.length===10&&d.startsWith("65"))d=d.slice(2);
@@ -342,8 +349,22 @@ function updatePaymentLink(){
   };
 }
 
+$("wa").addEventListener("input", () => {
+  const waVal = $("wa").value;
+  if (!manualTmobile) {
+    $("tmobile").value = waVal;
+  }
+  check();
+});
+
+$("tmobile").addEventListener("input", () => {
+  manualTmobile = $("tmobile").value.trim() !== "";
+  check();
+});
+
 function check(){
-  const waOK=validMobile(normMobile($("wa").value));
+  const waVal = normMobile($("wa").value);
+  const waOK = validMobile(waVal);
   $("waMsg").textContent=$("wa").value&&!waOK?"Enter a valid 8-digit Singapore number":"";
   $("waMsg").className="msg bad";
 
@@ -365,11 +386,11 @@ function check(){
 }
 
 $("batch").addEventListener("input",validateBatch);
-["wa","persons","namesIn","tmobile","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
+["persons","namesIn","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
 
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
-/* ============ SUBMIT TO GOOGLE FORM (Excludes Batch) ============ */
+/* ============ SUBMIT TO GOOGLE FORM ============ */
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();
   if($("submitBtn").disabled)return;
@@ -378,7 +399,6 @@ $("form").addEventListener("submit",async e=>{
   const dt=$("date").value, [y,m,d]=dt.split("-");
   const body=new URLSearchParams();
 
-  // Submit ONLY required fields to Google Forms (No Batch Code submitted)
   body.set(E.whatsapp, wa);
   body.set(E.persons, String(parseInt($("persons").value)));
   body.set(E.names, nameList().join(", "));
@@ -405,6 +425,7 @@ $("form").addEventListener("submit",async e=>{
     
     $("form").reset();
     current=null;
+    manualTmobile = false;
     $("batchMsg").textContent="";
     $("date").value=todayStr();
     recalc();
