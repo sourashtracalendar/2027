@@ -13,11 +13,20 @@
   .wrap{max-width:560px;margin:0 auto;padding:16px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
   h2{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
-  .total{font-size:24px;font-weight:700}
-  .total .unv{color:var(--warn);font-weight:600;font-size:18px}
+  
+  /* Collapsible Live Update */
+  details.live-update{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:14px}
+  details.live-update summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;list-style:none}
+  details.live-update summary::-webkit-details-marker{display:none}
+  .dot{height:10px;width:10px;background-color:var(--ok);border-radius:50%;display:inline-block;margin-right:8px;animation:blink 1.5s infinite}
+  @keyframes blink{0%{opacity:1}50%{opacity:.2}100%{opacity:1}}
+  .sum-left{display:flex;align-items:center}
+  .total-span{font-weight:700}
+  .total-span .unv{color:var(--warn);font-size:14px}
   ul.names{list-style:none;margin:10px 0 0;padding:0;max-height:200px;overflow:auto;border-top:1px solid var(--line)}
   ul.names li{padding:6px 2px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
   .nv{color:var(--bad);font-size:13px;font-weight:600}
+
   .muted{color:var(--muted);font-size:13px}
   label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
   input[type=text],input[type=tel],input[type=number],input[type=date]{width:100%;padding:10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);font:inherit}
@@ -25,7 +34,7 @@
   input[readonly]{opacity:.8}
   .row{display:flex;gap:10px;align-items:flex-end}
   .row>*{flex:1}
-  .chk{display:flex;align-items:center;gap:8px;font-weight:400;margin:6px 0 0}
+  
   button, .btn-link{font:inherit;font-weight:700;padding:11px 16px;border-radius:8px;border:0;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;display:block;text-align:center}
   button.sec, .btn-link.sec{background:#7a1fa2}
   button:disabled, .btn-link[aria-disabled="true"]{opacity:.4;cursor:not-allowed;pointer-events:none}
@@ -40,21 +49,25 @@
 </head>
 <body>
 <div class="wrap">
-  <!-- TOP: live update -->
-  <div class="card">
-    <h2>Live Update</h2>
-    <div class="total" id="total">Total S$ –</div>
+  <!-- TOP: One-line collapsible live update -->
+  <details class="live-update">
+    <summary>
+      <span class="sum-left"><span class="dot"></span>Live Update</span>
+      <span class="total-span" id="total">S$ –</span>
+    </summary>
     <ul class="names" id="names"></ul>
-    <div class="muted" id="feedStatus">Loading…</div>
+  </details>
+
+  <!-- BATCH CODE ABOVE FORM -->
+  <div class="card" style="margin-bottom:14px">
+    <label for="batch" style="margin-top:0">Batch Code <span class="req">*</span></label>
+    <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
+    <div class="msg" id="batchMsg"></div>
   </div>
 
   <!-- INPUT & PAYMENT -->
   <form class="card" id="form" autocomplete="off" novalidate>
     <h2>Payment &amp; Submission</h2>
-
-    <label for="batch">Batch Code <span class="req">*</span></label>
-    <input type="text" id="batch" inputmode="text" placeholder="Enter batch code" required>
-    <div class="msg" id="batchMsg"></div>
 
     <label for="wa">WhatsApp Number <span class="req">*</span></label>
     <input type="tel" id="wa" inputmode="numeric" placeholder="8-digit mobile" required>
@@ -75,19 +88,17 @@
     <input type="text" id="namesIn" placeholder="e.g. Ravi, Meena" required>
     <div class="msg" id="namesMsg"></div>
 
-    <!-- Native Link Button to trigger Android App Chooser -->
-    <a id="payLink" class="btn-link sec" aria-disabled="true" style="margin-top:10px;width:100%">Choose UPI / Payment App</a>
+    <!-- Simple PayNow Button -->
+    <a id="payLink" class="btn-link sec" aria-disabled="true" style="margin-top:14px;margin-bottom:10px;width:100%">PayNow</a>
 
     <label for="date">Transferred Date <span class="req">*</span></label>
     <input type="date" id="date" required>
-    <label class="chk"><input type="checkbox" id="today"> Use today's date</label>
 
     <label for="tmobile">PayNow Number (if different) – optional</label>
     <input type="tel" id="tmobile" inputmode="numeric" placeholder="Mobile number used in Payment App">
     <div class="msg" id="tmMsg"></div>
 
-    <div class="muted" style="margin-top:12px"><span class="req">*</span> Required. Only the PayNow Number is optional.</div>
-    <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:8px">Submit</button>
+    <button type="submit" class="submit" id="submitBtn" disabled style="margin-top:12px">Submit</button>
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
 </div>
@@ -119,7 +130,7 @@ const CFG = {
   REFRESH_MS: 30000
 };
 
-/* ============ helpers ============ */
+/* ============ HELPERS ============ */
 const $ = id => document.getElementById(id);
 const fmt = n => n.toLocaleString("en-SG",{minimumFractionDigits:2,maximumFractionDigits:2});
 const num = v => { const n = parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; };
@@ -154,7 +165,15 @@ async function getCSV(url){
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
 
-/* ============ TOP: live feed ============ */
+function todayStr(){
+  const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Singapore"}));
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+
+/* Set default date to today */
+$("date").value = todayStr();
+
+/* ============ TOP: LIVE FEED ============ */
 async function loadFeed(){
   try{
     const rows=await getCSV(CFG.PUBLICFEED_CSV_URL);
@@ -168,13 +187,12 @@ async function loadFeed(){
       total+=amt; if(isN) unverified+=amt;
       if(name) li.push(`<li><span>${esc(name)}</span>${isN?'<span class="nv">(N)</span>':''}</li>`);
     });
-    $("total").innerHTML=`Total S$ ${fmt(total)}`+(unverified>0?` <span class="unv">(${fmt(unverified)})</span>`:"");
-    $("names").innerHTML=li.join("")||'<li class="muted">No entries yet</li>';
-    $("feedStatus").textContent="Updated "+new Date().toLocaleTimeString("en-SG",{hour:"2-digit",minute:"2-digit"});
-  }catch(e){ $("feedStatus").textContent="Could not load live feed."; }
+    $("total").innerHTML=`S$ ${fmt(total)}`+(unverified>0?` <span class="unv">(${fmt(unverified)})</span>`:"");
+    $("names").innerHTML=li.join("");
+  }catch(e){}
 }
 
-/* ============ MIDDLE: active batches (Loaded in background for validation) ============ */
+/* ============ ACTIVE BATCHES ============ */
 let batches=[];
 async function loadBatches(){
   try{
@@ -282,19 +300,9 @@ function check(){
 $("batch").addEventListener("input",validateBatch);
 ["wa","persons","namesIn","tmobile","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
 
-function todayStr(){
-  const d=new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Singapore"}));
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-}
-$("today").addEventListener("change",e=>{
-  $("date").readOnly=e.target.checked;
-  if(e.target.checked)$("date").value=todayStr();
-  check();
-});
-
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
-/* ============ Submit to Google Form ============ */
+/* ============ SUBMIT TO GOOGLE FORM ============ */
 $("form").addEventListener("submit",async e=>{
   e.preventDefault();
   if($("submitBtn").disabled)return;
@@ -318,7 +326,7 @@ $("form").addEventListener("submit",async e=>{
   try{
     await fetch(CFG.FORM_POST_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"application/x-www-form-urlencoded"},body});
     res.textContent="✓ Submitted. Thank you! Your entry will show once verified.";res.className="msg ok";
-    $("form").reset();current=null;$("date").readOnly=false;$("batchMsg").textContent="";recalc();
+    $("form").reset();current=null;$("batchMsg").textContent="";$("date").value=todayStr();recalc();
     setTimeout(loadFeed,4000);
   }catch(err){
     res.textContent="Submission failed. Please check your connection and try again.";res.className="msg bad";
@@ -327,7 +335,7 @@ $("form").addEventListener("submit",async e=>{
   btn.textContent="Submit";
 });
 
-/* ============ init ============ */
+/* ============ INIT ============ */
 loadFeed();
 loadBatches();
 setInterval(loadFeed,CFG.REFRESH_MS);
