@@ -42,7 +42,9 @@
   .req{color:var(--bad)}
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
-  .submit{width:100%;font-size:16px;height:42px;display:flex;align-items:center;justify-content:center}
+  
+  /* Submit button exact match to input height */
+  .submit{width:100%;font-size:16px;height:43px;display:flex;align-items:center;justify-content:center;margin-top:0}
   
   dialog{border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);max-width:380px;text-align:center;width:92%}
   dialog::backdrop{background:rgba(0,0,0,.5)}
@@ -109,13 +111,12 @@
       <div>
         <label for="tmobile" style="margin-top:0">PayLah Number</label>
         <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
-        <div class="msg" id="tmMsg"></div>
       </div>
       <div>
-        <label style="visibility:hidden;margin-top:0">Action</label>
         <button type="submit" class="submit" id="submitBtn" disabled>Submit</button>
       </div>
     </div>
+    <div class="msg" id="tmMsg"></div>
 
     <div class="msg" id="result" style="text-align:center"></div>
   </form>
