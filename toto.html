@@ -115,7 +115,7 @@
   </form>
 </div>
 
-<!-- PAYMODAL DIALOG (Works for Mobile & Desktop) -->
+<!-- PAYMODAL DIALOG -->
 <dialog id="payDlg">
   <h3 style="margin:0 0 4px">Pay with PayLah / PayNow</h3>
   <div class="muted" id="payInfo"></div>
@@ -162,7 +162,7 @@ function parseCSV(text){
   const rows=[];let row=[],cur="",q=false;
   for(let i=0;i<text.length;i++){
     const c=text[i];
-    if(q){ if(c=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else q=false; }
+    if(q){ if(c=='"'){ if(text[i+1]=='"'){cur+='"';i++;} else q=false; } else cur+=c; }
     else if(c=='"') q=true;
     else if(c==","){row.push(cur);cur="";}
     else if(c=="\n"||c=="\r"){ if(c=="\r"&&text[i+1]=="\n")i++; row.push(cur);cur=""; if(row.some(x=>x.trim()!==""))rows.push(row); row=[]; }
@@ -292,17 +292,24 @@ async function copyText(str, msg) {
 }
 
 function updatePaymentLink(){
-  const amt=parseFloat($("amount").value)||0;
+  const amt = parseFloat($("amount").value) || 0;
   const payLink = $("payLink");
-  
-  if(!current || !current.pay || amt <= 0){
+  const waVal = normMobile($("wa").value);
+  const waOK = validMobile(waVal);
+  const personsVal = parseInt($("persons").value) || 0;
+
+  // Requirement 1: Enable PayLah! button ONLY after batch code, valid whatsapp number, and number of persons are entered.
+  const canPay = current && waOK && personsVal >= 0 && amt > 0;
+
+  if(!canPay){
     payLink.setAttribute("aria-disabled", "true");
     payLink.removeAttribute("href");
     return;
   }
 
   const id = current.pay;
-  const ref = current.code || current.no;
+  // Requirement 2: Ref should be WhatsApp number instead of batch code
+  const ref = waVal;
   const cleanPhone = String(id).replace(/\D/g,"");
 
   payLink.removeAttribute("aria-disabled");
@@ -311,16 +318,14 @@ function updatePaymentLink(){
   payLink.onclick = (e) => {
     e.preventDefault();
     
-    // Direct redirect if custom DBS PayLah Link exists in Spreadsheet
     if(current.link){
       location.href = current.link;
       return;
     }
 
-    $("payInfo").textContent = `S$ ${fmt(amt)} · Ref: ${ref}`;
+    $("payInfo").textContent = `S$ ${fmt(amt)} · Ref (WA): ${ref}`;
     $("qr").innerHTML = "";
 
-    // Generate Official SGQR Code
     const payload = sgPaynowPayload(amt, ref, id);
     new QRCode($("qr"), {
       text: payload,
@@ -329,7 +334,6 @@ function updatePaymentLink(){
       correctLevel: QRCode.CorrectLevel.M
     });
 
-    // Mobile Clipboard Auto-copy + Action Handlers
     copyText(cleanPhone, `Mobile number (+65 ${cleanPhone}) copied to clipboard!`);
     
     $("copyNoBtn").onclick = () => copyText(cleanPhone, `Mobile (+65 ${cleanPhone}) copied!`);
@@ -354,6 +358,9 @@ function check(){
   const nm=$("namesMsg");
   if(n&&p&&n!==p){nm.textContent=`${n} name(s) entered for ${p} person(s)`;nm.className="msg warn";}
   else nm.textContent="";
+
+  // Update PayLah button state whenever inputs change
+  updatePaymentLink();
 
   const base=!!current&&p>=1;
   $("submitBtn").disabled=!(base&&waOK&&tmOK&&n>0&&$("date").value);
