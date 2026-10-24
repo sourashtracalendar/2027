@@ -1227,7 +1227,7 @@ function renderTicker() {
     const quickSummaryPill = document.getElementById('quickSummaryPill');
     const t = translations[currentLang];
 
-    quickSummaryPill.innerHTML = `${sheetStats.totalCalendarsBooked} ${currentLang === 'ta' ? 'காலண்டர்கள்' : 'Booked'}`;
+    quickSummaryPill.innerHTML = `${sheetStats.totalCalendarsBooked} ${currentLang === 'ta' ? '/1000 காலண்டர்கள்' : '/1000 Booked'}`;
 
     let namesOptionsHTML = `<option value="" disabled selected>${t.tickerTotal}: ${sheetStats.totalResponses}</option>`;
     if (sheetStats.responderNames.length > 0) {
