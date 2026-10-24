@@ -261,7 +261,6 @@ async function loadBatches(){
 
 /* ============ INPUT & PAYMENT ============ */
 let current=null;
-let manualTmobile = false;
 
 function normMobile(v){
   let d=String(v).replace(/\D/g,"");
@@ -350,19 +349,6 @@ function updatePaymentLink(){
   };
 }
 
-$("wa").addEventListener("input", () => {
-  const waVal = $("wa").value;
-  if (!manualTmobile) {
-    $("tmobile").value = waVal;
-  }
-  check();
-});
-
-$("tmobile").addEventListener("input", () => {
-  manualTmobile = $("tmobile").value.trim() !== "";
-  check();
-});
-
 function check(){
   const waVal = normMobile($("wa").value);
   const waOK = validMobile(waVal);
@@ -387,7 +373,7 @@ function check(){
 }
 
 $("batch").addEventListener("input",validateBatch);
-["persons","namesIn","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
+["wa","tmobile","persons","namesIn","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
 
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
@@ -426,7 +412,6 @@ $("form").addEventListener("submit",async e=>{
     
     $("form").reset();
     current=null;
-    manualTmobile = false;
     $("batchMsg").textContent="";
     $("date").value=todayStr();
     recalc();
