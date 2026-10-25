@@ -268,14 +268,28 @@ let batches=[];
 async function loadBatches(){
   try{
     const rows=await getCSV(CFG.MASTER_CSV_URL);
-    batches=rows.map(r=>({
-      no:(r["batch no"]||"").trim(),
-      code:(r["batch code"]||"").trim(),
-      amt:num(pick(r,"amount per person","per person","amount")),
-      pay:pick(r,"paylay id","paynow id","paynow","paylah").replace(/\s/g,""),
-      link:(r["paylah link"]||r["paylay link"]||r["payment link"]||"").trim(),
-      status:pick(r["status"])
-    })).filter(b=>(b.code||b.no) && b.status.toLowerCase()==="active");
+    batches=rows.map(r=>{
+      const getVal = (...keys) => {
+        for(const k of keys){
+          const foundKey = Object.keys(r).find(h => h.trim().toLowerCase() === k.toLowerCase());
+          if(foundKey !== undefined && r[foundKey] !== "") return r[foundKey];
+        }
+        for(const k of keys){
+          const foundKey = Object.keys(r).find(h => h.trim().toLowerCase().includes(k.toLowerCase()));
+          if(foundKey !== undefined && r[foundKey] !== "") return r[foundKey];
+        }
+        return "";
+      };
+
+      return {
+        no: getVal("batch no", "no"),
+        code: getVal("batch code", "code"),
+        amt: num(getVal("amount per person", "per person", "amount")),
+        pay: getVal("paylay id", "paynow id", "paynow", "paylah").replace(/\s/g,""),
+        link: getVal("paylah link", "paylay link", "payment link", "link"),
+        status: getVal("status")
+      };
+    }).filter(b => (b.code || b.no) && (b.status === "" || b.status.toLowerCase() === "active"));
     validateBatch();
   }catch(e){}
 }
