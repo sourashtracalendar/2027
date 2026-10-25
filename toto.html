@@ -44,6 +44,12 @@
   .msg{font-size:13px;margin-top:4px;min-height:18px}
   .ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
   
+  /* Input wrapper for inside-input checkbox layout */
+  .input-with-action { position: relative; display: flex; align-items: center; }
+  .input-with-action input[type=tel] { padding-right: 110px; }
+  .inside-action { position: absolute; right: 8px; display: flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; user-select: none; background: var(--card); padding: 2px 4px; border-radius: 4px; }
+  .inside-action input { width: auto; margin: 0; cursor: pointer; }
+
   /* Submit button exact match to input height & vertical alignment */
   .submit{width:100%;font-size:16px;height:43px;display:flex;align-items:center;justify-content:center;margin-top:0}
   
@@ -111,10 +117,11 @@
     <div class="row" style="margin-top:12px">
       <div>
         <label for="tmobile" style="margin-top:0">PayLah Number <span class="req">*</span></label>
-        <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
-        <div style="margin-top:6px;font-size:13px;display:flex;align-items:center;gap:6px;">
-          <input type="checkbox" id="sameWa" style="width:auto;margin:0;cursor:pointer">
-          <label for="sameWa" style="margin:0;font-weight:normal;cursor:pointer">Same as WA#</label>
+        <div class="input-with-action">
+          <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
+          <label class="inside-action" for="sameWa">
+            <input type="checkbox" id="sameWa"> Same as WA#
+          </label>
         </div>
       </div>
       <div>
