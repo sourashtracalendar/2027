@@ -87,7 +87,7 @@
       </div>
       <div>
         <label for="amount">Total Amount (S$) <span class="req">*</span></label>
-        <input type="text" id="amount" readonly value="0.00">
+        <input type="text" id="amount" readonly value="0">
       </div>
     </div>
 
@@ -110,8 +110,12 @@
     <!-- PayLah Number & Submit Button Side-by-Side -->
     <div class="row" style="margin-top:12px">
       <div>
-        <label for="tmobile" style="margin-top:0">PayLah Number</label>
+        <label for="tmobile" style="margin-top:0">PayLah Number <span class="req">*</span></label>
         <input type="tel" id="tmobile" inputmode="numeric" placeholder="8-digit mobile">
+        <div style="margin-top:6px;font-size:13px;display:flex;align-items:center;gap:6px;">
+          <input type="checkbox" id="sameWa" style="width:auto;margin:0;cursor:pointer">
+          <label for="sameWa" style="margin:0;font-weight:normal;cursor:pointer">Same as WA#</label>
+        </div>
       </div>
       <div>
         <button type="submit" class="submit" id="submitBtn" disabled>Submit</button>
@@ -162,7 +166,7 @@ const CFG = {
 
 /* ============ HELPERS ============ */
 const $ = id => document.getElementById(id);
-const fmt = n => n.toLocaleString("en-SG",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt = n => Number.isInteger(n) ? n.toLocaleString("en-SG") : n.toLocaleString("en-SG",{minimumFractionDigits:2,maximumFractionDigits:2});
 const num = v => { const n = parseFloat(String(v??"").replace(/[^0-9.\-]/g,"")); return isNaN(n)?0:n; };
 
 function parseCSV(text){
@@ -241,7 +245,7 @@ async function loadFeed(){
 
       if(name) {
         if(isY) {
-          li.append ? null : li.push(`<li><span class="verified-item">${esc(name)}</span><span class="verified-item">✓</span></li>`);
+          li.push(`<li><span class="verified-item">${esc(name)}</span><span class="verified-item">✓</span></li>`);
         } else {
           li.push(`<li><span>${esc(name)}</span><span class="nv">(N)</span></li>`);
         }
@@ -264,7 +268,7 @@ async function loadBatches(){
       amt:num(pick(r,"amount per person","per person","amount")),
       pay:pick(r,"paylay id","paynow id","paynow","paylah").replace(/\s/g,""),
       link:(r["paylah link"]||r["paylay link"]||r["payment link"]||"").trim(),
-      status:pick(r,"status")
+      status:pick(r["status"])
     })).filter(b=>(b.code||b.no) && b.status.toLowerCase()==="active");
     validateBatch();
   }catch(e){}
@@ -360,15 +364,34 @@ function updatePaymentLink(){
   };
 }
 
+/* Same as WA# Checkbox Handler */
+$("sameWa").addEventListener("change", () => {
+  if ($("sameWa").checked) {
+    $("tmobile").value = $("wa").value;
+    $("tmobile").readOnly = true;
+  } else {
+    $("tmobile").readOnly = false;
+  }
+  check();
+});
+
+$("wa").addEventListener("input", () => {
+  if ($("sameWa").checked) {
+    $("tmobile").value = $("wa").value;
+  }
+  check();
+});
+
 function check(){
   const waVal = normMobile($("wa").value);
   const waOK = validMobile(waVal);
   $("waMsg").textContent=$("wa").value&&!waOK?"Enter a valid 8-digit Singapore number":"";
   $("waMsg").className="msg bad";
 
-  const tm=$("tmobile").value.trim();
-  const tmOK=!tm||validMobile(normMobile(tm));
-  $("tmMsg").textContent=!tmOK?"Enter a valid 8-digit Singapore number":"";
+  const tmVal = $("tmobile").value.trim();
+  const tmNorm = normMobile(tmVal);
+  const tmOK = tmVal !== "" && validMobile(tmNorm);
+  $("tmMsg").textContent = tmVal && !tmOK ? "Enter a valid 8-digit Singapore number" : "";
   $("tmMsg").className="msg bad";
 
   const p=parseInt($("persons").value)||0;
@@ -384,7 +407,7 @@ function check(){
 }
 
 $("batch").addEventListener("input",validateBatch);
-["wa","tmobile","persons","namesIn","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
+["tmobile","persons","namesIn","date"].forEach(id=>$(id).addEventListener("input",id==="persons"?recalc:check));
 
 $("closeDlg").addEventListener("click",()=>$("payDlg").close());
 
@@ -404,7 +427,7 @@ $("form").addEventListener("submit",async e=>{
   body.set(E.date, dt);
   body.set("fvv", "1");
   body.set("pageHistory", "0");
-  body.set(E.tmobile, tm || wa);
+  body.set(E.tmobile, tm);
 
   const btn=$("submitBtn"),res=$("result");
   btn.disabled=true;btn.textContent="Submitting…";
@@ -420,6 +443,8 @@ $("form").addEventListener("submit",async e=>{
     res.className="msg ok";
     
     $("form").reset();
+    $("sameWa").checked = false;
+    $("tmobile").readOnly = false;
     current=null;
     $("batchMsg").textContent="";
     $("date").value=todayStr();
