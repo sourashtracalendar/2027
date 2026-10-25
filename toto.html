@@ -22,10 +22,11 @@
   @keyframes blink{0%{opacity:1}50%{opacity:.2}100%{opacity:1}}
   .sum-left{display:flex;align-items:center}
   .total-span{font-weight:700}
-  .total-span .unv{color:var(--warn);font-size:14px}
+  .total-span .yv{color:var(--ok);font-size:14px;font-weight:600}
   ul.names{list-style:none;margin:10px 0 0;padding:0;max-height:200px;overflow:auto;border-top:1px solid var(--line)}
   ul.names li{padding:6px 2px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
   .nv{color:var(--bad);font-size:13px;font-weight:600}
+  .verified-item{color:var(--ok);font-weight:600}
 
   .muted{color:var(--muted);font-size:13px}
   label{display:block;font-weight:600;font-size:14px;margin:12px 0 4px}
@@ -227,18 +228,28 @@ function sgPaynowPayload(amount, ref, mobileId){
 async function loadFeed(){
   try{
     const rows=await getCSV(CFG.PUBLICFEED_CSV_URL);
-    let total=0, unverified=0;
+    let total=0, verifiedAmt=0;
     const li=[];
     rows.forEach(r=>{
       const name=pick(r,"name","names");
       const amt=num(pick(r,"total amount","amount","total"));
       const ver=pick(r,"verified","verify","status").toUpperCase();
-      const isN = ver.startsWith("N");
-      total+=amt; if(isN) unverified+=amt;
-      if(name) li.push(`<li><span>${esc(name)}</span>${isN?'<span class="nv">(N)</span>':''}</li>`);
+      
+      const isY = ver === "Y";
+      total += amt;
+      if(isY) verifiedAmt += amt;
+
+      if(name) {
+        if(isY) {
+          li.append ? null : li.push(`<li><span class="verified-item">${esc(name)}</span><span class="verified-item">✓</span></li>`);
+        } else {
+          li.push(`<li><span>${esc(name)}</span><span class="nv">(N)</span></li>`);
+        }
+      }
     });
-    $("total").innerHTML=`S$ ${fmt(total)}`+(unverified>0?` <span class="unv">(${fmt(unverified)})</span>`:"");
-    $("names").innerHTML=li.join("");
+    
+    $("total").innerHTML = `S$ ${fmt(total)} <span class="yv">(Verified: S$ ${fmt(verifiedAmt)})</span>`;
+    $("names").innerHTML = li.join("");
   }catch(e){}
 }
 
@@ -383,16 +394,14 @@ $("form").addEventListener("submit",async e=>{
   if($("submitBtn").disabled)return;
 
   const E=CFG.ENTRY, wa=normMobile($("wa").value), tm=normMobile($("tmobile").value);
-  const dt=$("date").value, [y,m,d]=dt.split("-");
+  const dt=$("date").value;
   const body=new URLSearchParams();
 
   body.set(E.whatsapp, wa);
   body.set(E.persons, String(parseInt($("persons").value)));
   body.set(E.names, nameList().join(", "));
   body.set(E.amount, $("amount").value);
-  body.set(E.date+"_year", y);
-  body.set(E.date+"_month", String(+m));
-  body.set(E.date+"_day", String(+d));
+  body.set(E.date, dt);
   body.set("fvv", "1");
   body.set("pageHistory", "0");
   body.set(E.tmobile, tm || wa);
